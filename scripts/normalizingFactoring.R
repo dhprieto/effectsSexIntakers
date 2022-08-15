@@ -2,8 +2,8 @@
 
 source("scripts/readingFilling.R")
 library(scales)
+library(mice)
 
-table1.0 <- readingFillingGrouping("data/chronicPlasmAnt.csv")
 
 # normalizing
 
@@ -11,10 +11,9 @@ normalizingNumeric <- function(tableComplete) {
   
   for (i in colnames(tableComplete)){
    
-    if (is.numeric(tableComplete[,i]) && tableComplete[,i] != "numVol"){
-      print("hecho")
-      print(i)
-      tableComplete[,i] <- rescale(tableComplete[,i])
+    if (is.numeric(tableComplete[,i]) && i != "numVol"){
+
+      tableComplete[,i] <- scales::rescale(tableComplete[,i])
       
     }
      
@@ -22,7 +21,30 @@ normalizingNumeric <- function(tableComplete) {
 return (tableComplete)    
 }
 
-table1.1 <- normalizingNumeric(table1.0)
+
+factoringImputating <- function(tableNorm){
+
+  tableNorm$Sweetener <- factor(tableNorm$Sweetener) 
+  tableNorm$Sex <- factor(tableNorm$Sex)
+  tableNorm$Time <- factor(tableNorm$Time)
+  
+  imp <- mice(tableNorm)
+  
+  tableImp <- complete(imp)
+  
+  
+  return(tableImp)   
+  
+}
 
 
-table1.0$DHPAA.di.Sulfate.1
+
+
+
+#test ----
+
+
+# table1.0 <- readingFillingGrouping("data/chronicPlasmAnt.csv")
+# table1.1 <- anthroSex(table1.0)
+# table1.2 <- normalizingNumeric(table1.1)
+# table1.3 <- factoringImputating(table1.2)
