@@ -3,4 +3,11 @@ notas
 
 buscar mejor metodo de hacer correlación
 knn imposible de hacer para feature importance
-ver porqué no está escalado después de escalarlo
+falta transformar plasmaFlav X
+quedan por adaptar los nombres de tres data sets en variableanalysis
+
+apuntes
+-------
+
+vol 6,16 borrados de urineFlav
+los imputs de urine no son NA pero están vacíos X

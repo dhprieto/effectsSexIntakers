@@ -7,7 +7,12 @@ library(tidyverse)
 # reading table
 
 readingFillingGrouping <- function(tablaPath){
+  
   tabla <- read.csv(tablaPath, sep = ";", dec = ".")
+  
+  if (tablaPath == "data/chronicUrineFlav.csv"){
+    tabla <- read.csv(tablaPath, sep = ";", dec = ",")
+  }
   
   # remove raw data from spectometry
   

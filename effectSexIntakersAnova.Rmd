@@ -1,0 +1,125 @@
+---
+title: "effectSexIntakers"
+author: "DHdez"
+date: "13/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(rstatix)
+source("scripts/main.R")
+
+aov_test <- function(tabla, variable){
+  
+  tablaVar <- tabla %>% select(numVol, Sweetener, Sex, Time, variable)
+
+  # tablaVar <- tablaVar[!tablaVar[[5]] %in% boxplot.stats(tablaVar[[5]])$out,]
+   
+  res.aov <- anova_test(data = ungroup(tablaVar), dv=variable, wid=numVol, 
+                        between = c(Sex, Sweetener), within= Time)
+  
+  tablaAnova <- get_anova_table(res.aov, correction = "auto")
+  
+  print(tablaAnova)
+}
+
+# Función para hacer en bucle el análisis anova a lo largo de una tabla
+
+aov_loop <- function(tabla){
+  
+  message(paste("Tabla analizada: ", deparse(substitute(tabla))))
+  for (i in colnames(tabla)[-1]){
+
+    if (is.numeric(tabla[,i])){
+    
+      message(paste("Variable analizada: ", i))
+      aov_test(tabla,i)
+    }
+    
+    
+  }
+}
+
+pairwiseTTest <- function(tabla){
+  
+  
+  # remover no duplicados
+  
+  if (deparse(substitute(tabla)) == "urineAnt"){
+  counts <- data.frame(table(tabla$numVol))
+  tabla <- tabla[tabla$numVol %in% counts$Var1[counts$Freq > 1],]
+  }
+  
+  for (i in colnames(tabla)){
+    
+    if (is.numeric(tabla[,i])){
+      
+      
+      message(paste("Analized variable: ", i))
+      
+      message(paste("Time comparisons ", i)) 
+      
+      print(pairwise_t_test(data = tabla , formula = as.formula(paste(sym(i),"~ Time")),
+                            paired = T, p.adjust.method = "bonferroni")
+            %>% dplyr::select(-df, -statistic))
+      
+      tablaGr <- group_by(tabla, Sweetener, Sex)
+      
+      message(paste("Time-Sweetener-Sex comparisons", i))
+      
+      print(pairwise_t_test(data = tablaGr , formula = as.formula(paste(sym(i),"~ Time")),
+                            paired = T, p.adjust.method = "bonferroni") %>% dplyr::select(-df, -statistic))
+      
+      
+      tablaGr <- group_by(tabla, Sweetener)
+      
+      message(paste("Time-Sweetener comparisons", i))
+      
+      print(pairwise_t_test(data = tablaGr , formula = as.formula(paste(sym(i),"~ Time")),
+                            paired = T, p.adjust.method = "bonferroni") %>% dplyr::select(-df, -statistic))
+      
+      
+      tablaGr <- group_by(tabla, Sex)
+      
+      message(paste("Time-Sex comparisons", i))
+      
+      print(pairwise_t_test(data = tablaGr , formula = as.formula(paste(sym(i),"~ Time")),
+                            paired = T, p.adjust.method = "bonferroni") %>% dplyr::select(-df, -statistic))
+    }
+  }
+}
+
+
+```
+
+
+```{r test, include = FALSE}
+
+plasmAnt <- mainPreproc("data/chronicPlasmAnt.csv")
+plasmFlav <- mainPreproc("data/chronicPlasmFlav.csv")
+urineAnt <- mainPreproc("data/chronicUrineAnt.csv")
+urineFlav <- mainPreproc("data/chronicUrineFlav.csv") 
+
+```
+
+
+
+```{r anova loop }
+
+aov_loop(plasmAnt)
+aov_loop(plasmFlav)
+aov_loop(urineAnt)
+aov_loop(urineFlav)
+
+```
+
+```{r pairwisettest}
+
+pairwiseTTest(plasmAnt)
+pairwiseTTest(plasmFlav)
+pairwiseTTest(urineAnt)
+pairwiseTTest(urineFlav)
+
+```
+
