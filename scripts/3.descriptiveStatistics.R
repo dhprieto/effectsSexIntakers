@@ -1,6 +1,6 @@
 # descriptive statistics
-source("scripts/normalizingFactoring.R")
-source("scripts/readingFilling.R")
+source("scripts/2.normalizingFactoring.R")
+source("scripts/1.readingFilling.R")
 library("psych")
 library("modeest")
 library(skimr)  

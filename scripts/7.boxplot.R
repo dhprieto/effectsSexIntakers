@@ -1,21 +1,31 @@
-
 #### boxplots tendencia anovas
 
-## carga librerías y scripts
-
-source("scripts/main.R")
-
-library(reshape2)
-
-boxplotBias <- function(vars, pathToTable, factore){
+boxplotBias <- function(vars, pathToTable, factore, removeOutliers = F ){
   
   # reading table
   
   table1.0 <- mainPreproc(pathToTable, F)
   
-  table1.1 <- table1.0 %>% select (-vars, -c(numVol, grouping))
+  table1.1 <- table1.0 %>% select (all_of(vars), Time, Sex, Sweetener, -c(numVol, grouping))
   
   
+  
+  if (removeOutliers){
+    
+    for (i in colnames(table1.1)) {
+      
+      if (is.numeric(table1.1[,i])){
+        
+        table1.1 <- table1.1[!table1.1[, i] %in% boxplot.stats(table1.1[,i])$out,]
+        
+      }
+    } 
+    
+    # return(table1.1)
+    
+  }
+  
+
   # long table format
   
   table1.2 <- melt(table1.1, id = c("Time", "Sex", "Sweetener"))
@@ -23,6 +33,8 @@ boxplotBias <- function(vars, pathToTable, factore){
   # plot factors
   
   bxp <- function(longTable, factore){
+
+    
     
     if (factore == "Time") {
       
@@ -43,6 +55,7 @@ boxplotBias <- function(vars, pathToTable, factore){
                             fill=factor(longTable[,factore]))) +
         geom_boxplot()+
         ggtitle(paste("B. Sex:Time Anthocyanin-Urine"))+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))+
         labs(y = "standarized value", x = "variables", fill = "Sex")+
         scale_fill_brewer(palette = "Reds")+  
         facet_wrap(~factor(Time, levels = c("Initial", "Final")))
@@ -56,6 +69,7 @@ boxplotBias <- function(vars, pathToTable, factore){
                             fill=factor(longTable[,factore])), colour = "Sweetener") +
         geom_boxplot()+
         ggtitle(paste("B. Sweetener:Time Flavanones-urine"))+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))+
         labs(y = "standarized value", x = "variables", fill = "Sweetener")+
         facet_wrap(~factor(Time, levels = c("Initial", "Final")))
       
@@ -68,10 +82,11 @@ boxplotBias <- function(vars, pathToTable, factore){
 
 }
 
-colnames(table1.0)
 
-boxplotBias(c("TOTAL.CA.1","DHPAA.di.Sulfate.1", "TFA.Gluc.1", "TFA.Sulfate.1", "TOTAL.TFA.1"), 
-            "data/chronicUrineAnt.csv", "Time")
+# test
 
-# scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-# theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))+
+# boxplotBias(vars = c("Total.CA","DHPAA.di.Sulfate", "TFA.Gluc", "TFA.Sulfate", "Total.TFA"), 
+#             pathToTable = "data/chronicUrineAnt.csv", 
+#             factore = "Sweetener",
+#             removeOutliers = F)
+

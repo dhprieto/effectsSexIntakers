@@ -1,9 +1,5 @@
 # Clustering
 
-# other scripts
-
-source("scripts/main.R")
-
 # libraries
 
 library(clValid)
@@ -16,43 +12,44 @@ library(ggpubr)
 clusteringTest <- function(pathToTable){
   
   table1.4 <- mainPreproc(pathToTable, F)
+  table1.5_initial <-  table1.4 %>% 
+    filter(Time == "Initial") %>% 
+    select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% 
+    mutate_if(is.double,as.numeric) %>% drop_na()
   
-  browser()
+  table1.5_final <-  table1.4 %>% 
+    filter(Time == "Final") %>% 
+    select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% 
+    mutate_if(is.double,as.numeric) %>% drop_na()
+
   comparisonTI <- clValid(
-    obj        = table1.4 %>% filter(Time == "Initial") %>% select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% 
-                 mutate_if(is.double,as.numeric),
+    obj        = table1.5_initial,
     nClust     = 2:6,
     clMethods  = c( "hierarchical", "kmeans", "diana", "fanny", "som", "model", "sota", "pam", "clara","agnes"),
     validation = c("stability", "internal")
   )
-  
   comparisonTF <- clValid(
-    obj        = table1.4 %>% filter(Time == "Final") %>% select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% 
-                 mutate_if(is.double,as.numeric),
+    obj        = table1.5_final,
     nClust     = 2:6,
     clMethods  = c( "hierarchical", "kmeans", "diana", "fanny", "som", "model", "sota", "pam", "clara","agnes"),
     validation = c("stability", "internal")
   )
-  
-  
+
   ### model-based clustering
   
-  tabla1.5 <- table1.4 %>% filter(Time == "Initial") %>% select(-c(grouping, Sweetener, Sex, numVol, Time) %>% 
-                                                                  mutate_if(is.double,as.numeric))
+  # Initial time
+  model_clustering_OF <- Mclust(table1.5_initial)
   
-  model_clustering_OF <- Mclust(tabla1.5)
-  
-  p1I <- fviz_mclust(object = model_clustering_OF, what = "BIC", pallete = "jco",  
+  p1I <- fviz_mclust(object = model_clustering_OF, what = "BIC", pallete = "jco",
                     title = paste("Model Selection ", pathToTable, "Initial Time")) + scale_x_discrete(limits = c(1:10))
   p2I <- fviz_mclust(model_clustering_OF, what = "classification", geom = "point",
                     title = paste("Clusters Plot ", pathToTable, "Initial Time") , pallete = "jco")
-
-  tabla1.5 <- table1.4 %>% filter(Time == "Final") %>% select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% 
-    mutate_if(is.double,as.numeric)
   
-  model_clustering_OF <- Mclust(tabla1.5)
+  # Final time
   
-  p1F <- fviz_mclust(object = model_clustering_OF, what = "BIC", pallete = "jco",  
+  model_clustering_OF <- Mclust(table1.5_final)
+  
+  p1F <- fviz_mclust(object = model_clustering_OF, what = "BIC", pallete = "jco",
                     title = paste("Model Selection ", pathToTable, "Final Time")) + scale_x_discrete(limits = c(1:10))
   p2F <- fviz_mclust(model_clustering_OF, what = "classification", geom = "point",
                     title = paste("Clusters Plot ", pathToTable, "Final Time"), pallete = "jco")
@@ -62,29 +59,44 @@ clusteringTest <- function(pathToTable){
 
 plasmFlavClustering <- clusteringTest("data/chronicPlasmFlav.csv")
 plasmAntClustering <- clusteringTest("data/chronicPlasmAnt.csv")
+
+
+
 urineFlavClustering <- clusteringTest("data/chronicUrineFlav.csv")
+
+table1.4 <- mainPreproc("data/chronicUrineFlav.csv", F)
+
+
+
 urineAntClustering <- clusteringTest("data/chronicUrineAnt.csv")
 
 tabla2.0 <- mainPreproc("data/chronicUrineAnt.csv", F)
 tabla2.1 <- mainPreproc("data/chronicUrineFlav.csv")
 
-tabla2.0.1 <- tabla2.0 %>% filter(Time == "Initial") %>% select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% mutate_if(is.double,as.numeric)
+tabla2.0.1 <- na.tabla2.0 %>% filter(Time == "Initial") %>% select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% mutate_if(is.double,as.numeric)
 
 ggarrange(plasmFlavClustering[[5]],plasmFlavClustering[[6]])
 
 
+summary(plasmFlavClustering[[1]])
+
+summary(plasmFlavClustering[[2]])
+
+summary(plasmAntClustering[[1]])
+
+summary(plasmAntClustering[[2]])
 
 
-
-
-
-
+table1.4 <- mainPreproc("data/chronicPlasmFlav.csv", F)
+table1.4 %>% filter(Time == "Initial") %>% select(-c(grouping, Sweetener, Sex, numVol, Time)) %>% 
+  mutate_if(is.double,as.numeric)
 
 
 
 
 
 ### pruebas ----
+
 table1.4 <- mainPreproc("data/chronicPlasmAnt.csv", F)
 
 comparisonTI <- clValid(

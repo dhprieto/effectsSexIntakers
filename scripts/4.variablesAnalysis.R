@@ -31,14 +31,15 @@ timingCleanFeatures <- function(tabla, pathToTable){
       tabla$Frec[i] = tabla$Frec.final[i]
     }
     
-    
+  # return(tabla)  
   }
   
   # cleaning of non relevant variables
   
-  subset(tabla, select =-c(Peso.inicial, Peso.final, Delta.Peso, Talla, IMC.Inicial, IMC.Final, 
+  tabla <- tabla %>% select(-c(Peso.inicial, Peso.final, Delta.Peso, Talla, IMC.Inicial, IMC.Final, 
                            Delta.IMC, Grasa.inicial, Grasa.final, Delta.Grasa, IRCV.Final, IRCV.inicial, 
                            Bpmin.final, Bpmin.inicial, Bpmax.final, Bpmax.inicial, Frec.final, Frec.inicial))
+  
   
   if (pathToTable == "data/chronicPlasmAnt.csv"){
   rename(tabla, CA = Caffeic.Acid..CA..1, CA.Gluc = CA.Gluc.1, CA.Sulfate = CA.Sulfate.1, Total.CA = TOTAL.CA.1,
@@ -48,11 +49,45 @@ timingCleanFeatures <- function(tabla, pathToTable){
          VA.GG = VA.GG.1, VA.Sulfate = VA.Sulfate.1, VA.Gluc.Sulfate = VA.Gluc.sulfate.1, 
          VA.di.Sulfate = VA.di.sulfate.1, Total.VA = Total.VA.1)
 
-  }  
+  }
+  
+  else if(pathToTable == "data/chronicPlasmFlav.csv"){
+    rename(tabla, E = Eriodictiol..E..1, ES = ES.1 , Total.E = TOTAL.E.1, HE.G = HE.G.1, NG = NG.1)
+  }
+  
+  else if(pathToTable == "data/chronicUrineFlav.csv"){
+    rename(tabla, E = Eriodyctiol..E..1, EG = ES.1, ES = ES.1 , Total.E = TOTAL.E.1, HE = HE.1, HE.G = HE.G.1, 
+           HE.GG = HE.GG.1, Total.HE = TOTAL.HE.1, N = Naringenine..N..1, NG = NG.1, NGG = NGG.1, NS = NS.1, 
+           Total.N = TOTAL.N.1)
+  }
+  
+  else if (pathToTable == "data/chronicUrineAnt.csv"){
+    rename(tabla, CA = Caffeic.acid..CA..1, CA.Gluc = CA.Gluc.1, CA.Sulfate = CA.Sulfate.1, 
+           CA.Gluc.Sulfate = CA.Gluc.sulfate.1, Total.CA = TOTAL.CA.1,
+           DHPAA = X3.4...Dihidroxiphenilacetic.acid..DHPAA..1, 
+           DHPAA.Gluc = DHPAA.Gluc.1, DHPAA.di.Gluc = DHPAA.di.Gluc.1, DHPAA.Gluc.Sulfate = DHPAA.Gluc.sulfate.1, 
+           DHPAA.di.Sulfate = DHPAA.di.Sulfate.1, Total.DHPAA = TOTAL.DHPAA.1, TFA.Gluc = TFA.Gluc.1, 
+           TFA.Sulfate = TFA.Sulfate.1, Total.TFA = TOTAL.TFA.1, VA = Vanillic.Acid..VA..1, VA.GG = VA.GG.1, 
+           VA.Gluc.Sulfate = VA.Gluc.sulfate.1, VA.di.Sulfate = VA.di.sulfate.1, Total.VA = Total.VA.1)
   }
 
-anthro <- c("Weight", "BMI", "Fat", "CVRI",
-            "Bpmin", "Bpmax", "Frec")
+    
+  # return(tabla)
+  }
+  
+
+# test
+
+# table1.0 <- readingFillingGrouping("data/chronicPlasmFlav.csv")
+# table1.1 <- anthroSex(table1.0)
+# table1.2 <- normalizingNumeric(table1.1)
+# table1.3 <- timingCleanFeatures(table1.2, "data/chronicPlasmFlav.csv")
+# table1.4 <- factoringImputating(table1.3)
+
+
+
+# anthro <- c("Weight", "BMI", "Fat", "CVRI",
+            # "Bpmin", "Bpmax", "Frec")
 # 
 # correlatedFeatures <- function (tabla) {
 #   
@@ -113,16 +148,7 @@ anthro <- c("Weight", "BMI", "Fat", "CVRI",
 # plot(importance)
 
 
-# test
-source("scripts/main.R")
 
-table1.0 <- readingFillingGrouping("data/chronicPlasmAnt.csv")
-table1.1 <- anthroSex(table1.0)
-table1.2 <- normalizingNumeric(table1.1)
-table1.3 <- factoringImputating(table1.2)
-table1.4 <- timingCleanFeatures(table1.3, "data/chronicPlasmAnt.csv")
-colnames(table1.5)
-table1.5 <- mainPreproc("data/chronicPlasmAnt.csv")
 
 
 # 

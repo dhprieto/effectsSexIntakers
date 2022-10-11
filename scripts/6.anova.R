@@ -36,14 +36,11 @@ aov_loop <- function(tabla){
   }
 }
 
-
-aov_loop(table1.4)
-
 # test ----
 
-table1.0 <- readingFillingGrouping("data/chronicUrineAnt.csv")
-table1.1 <- anthroSex(table1.0)
-table1.2 <- normalizingNumeric(table1.1)
-table1.3 <- factoringImputating(table1.2)
-table1.4 <- timingCleanFeatures(table1.3)
+# table1.0 <- readingFillingGrouping("data/chronicUrineAnt.csv")
+# table1.1 <- anthroSex(table1.0)
+# table1.2 <- normalizingNumeric(table1.1)
+# table1.3 <- factoringImputating(table1.2)
+# table1.4 <- timingCleanFeatures(table1.3)
 

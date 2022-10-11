@@ -90,6 +90,10 @@ anthroSex <- function(tableRFG){
   tableAnthroSex <- merge(tableAnthro, tableSex, by = "numVol")
   
   tableComplete <- merge(tableRFG, tableAnthroSex, by = "numVol")
+  
+  tableComplete$Sex[tableComplete$Sex == "HOMBRE"] <- "MAN"
+  tableComplete$Sex[tableComplete$Sex == "MUJER"] <- "WOMAN"
+  
   return(tableComplete)
 }
 

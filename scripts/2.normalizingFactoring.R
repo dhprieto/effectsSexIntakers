@@ -1,6 +1,6 @@
 # exploring the data and variables
 
-source("scripts/readingFilling.R")
+source("scripts/1.readingFilling.R")
 library(scales)
 library(mice)
 

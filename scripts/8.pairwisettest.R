@@ -1,3 +1,6 @@
+## Script for the pairwise (maybe called threewise) analysis
+
+
 pairwiseTTest <- function(tabla){
   
   
@@ -47,17 +50,18 @@ pairwiseTTest <- function(tabla){
 }
 
 
-
-table1.0 <- readingFillingGrouping("data/chronicUrineFlav.csv")
-table1.1 <- anthroSex(table1.0)
-table1.2 <- normalizingNumeric(table1.1)
-table1.3 <- factoringImputating(table1.2)
-table1.4 <- timingCleanFeatures(table1.3)
-
-pairwiseTTest(table1.4)
-
-
-pairwiseTTest(plasmAnt)
-pairwiseTTest(plasmFlav)
-pairwiseTTest(urineAnt)
-pairwiseTTest(urineFlav)
+# test
+# 
+# table1.0 <- readingFillingGrouping("data/chronicUrineFlav.csv")
+# table1.1 <- anthroSex(table1.0)
+# table1.2 <- normalizingNumeric(table1.1)
+# table1.3 <- factoringImputating(table1.2)
+# table1.4 <- timingCleanFeatures(table1.3)
+# 
+# pairwiseTTest(table1.4)
+# 
+# 
+# pairwiseTTest(plasmAnt)
+# pairwiseTTest(plasmFlav)
+# pairwiseTTest(urineAnt)
+# pairwiseTTest(urineFlav)
