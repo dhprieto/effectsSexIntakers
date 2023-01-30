@@ -38,18 +38,17 @@ randomFilling <- function(tabla){
   flush.console()
   
   if (class(tabla[[var]]) == "numeric"){
-    
+    print(length(tabla[is.na(tabla[[var]]), var]))
     # random number into the var variance
   
-    #for (i in seq(1, length(tabla[is.na(tabla[[var]]), var]))){
-    
+    for (i in rev(seq(1, length(tabla[is.na(tabla[[var]]), var])))){
       
-    tabla[is.na(tabla[[var]]), var] <- runif(length(tabla[is.na(tabla[[var]]), var]),
+      tabla[is.na(tabla[[var]]), var][i] <- runif(1,
                                              min= min(na.omit(tabla[[var]])), 
                                              max= max(na.omit(tabla[[var]])))
     
     
-    #}
+    }
     
     }
   
@@ -62,7 +61,8 @@ randomFilling <- function(tabla){
 
 table1.4_random <- randomFilling(table1.3)
 
-table1.3[is.na(table1.3[["CA"]]), "CA"]
+
+
 
 # pre-imputating test
 
@@ -75,7 +75,6 @@ table1.3 <- table1.3 %>% select (-c(numVol, grouping, Weight, BMI, Fat, CVRI, Bp
 
 # rf
 
-
 rf_noimp <- randomForest(Sex ~., data = table1.3, na.action = na.omit)
   
 table1.4 <- factoringImputating(table1.3)
@@ -84,51 +83,89 @@ rf_imp <- randomForest(Sex ~., data = table1.4)
 
 rf_impRan <- randomForest(Sex ~ ., data = table1.4_random)
 
-# svm
+# svm ----
 
-svm_tuning_noimp <- tune("svm", Sex ~ ., data = table1.3, kernel = "linear",
-                  ranges = list(cost = c(0.0001, 0.0005, 0.001, 0.01, 0.1, 1)),
+# noimp
+
+svm_tuning_noimp <- tune("svm", Sex ~ ., data = na.omit(table1.3), kernel = "linear",
+                  ranges = list(cost = c(0.0001, 0.0005, 0.001, 0.01, 0.1, 1, 10, 100)),
                   scale = TRUE)
 
-ggplot(data = svm_noimp$performances, aes(x = cost, y = error)) +
+ggplot(data = svm_tuning_noimp$performances, aes(x = cost, y = error)) +
   geom_line() +
   geom_point() +
   labs(title = "Error de clasificación vs hiperparámetro C") +
   theme_bw()
 
-svm_tuning_noimp$best.parameters
+svm_tuning_noimp$best.performance
 
-modelo_svc <- svm(Sex ~ ., data = table1.3, 
+modelo_svc <- svm(Sex ~ ., data = na.omit(table1.3), 
                   kernel = "linear", 
-                  cost = 1, 
+                  cost = 10, 
                   scale = TRUE)
 
-predicciones = predict(modelo_svc, table1.3)
+predicciones = predict(modelo_svc, na.omit(table1.3))
 
 sex_uwu <- na.omit(table1.3)
 sex_NoNa <- sex_uwu$Sex
 
 confusionMatrix(predicciones, sex_NoNa)
 
+# random imp
+
+set.seed(123)
+
+table1.4_random <- randomFilling(table1.3)
+
+svm_tuning_imp_ran <- tune("svm", Sex ~ ., data = table1.4_random, kernel = "linear",
+                       ranges= list(cost = c(0.0001, 0.0005, 0.001, 0.01, 0.1, 1, 10, 100)),
+                       scale = TRUE)
+ggplot(data = svm_tuning_imp$performances, aes(x = cost, y = error)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Error de clasificación vs hiperparámetro C") +
+  theme_bw()
+
+svm_tuning_imp_ran$best.parameters
+
+modelo_svc_imp_ran <- svm(Sex ~ ., data = table1.4_random, 
+                      kernel = "linear", 
+                      cost = 100, 
+                      scale = TRUE)
+
+predicciones_imp_ran = predict(modelo_svc_imp_ran, table1.4_random)
+
+confusionMatrix(predicciones_imp_ran, table1.4_random$Sex)
+
+
+# MICE imp
+
 table1.4 <- factoringImputating(table1.3)
 
 svm_tuning_imp <- tune("svm", Sex ~ ., data = table1.4, kernel = "linear",
-                       ranges= list(cost = c(0.0001, 0.0005, 0.001, 0.01, 0.1, 1)),
+                       ranges= list(cost = c(0.0001, 0.0005, 0.001, 0.01, 0.1, 1, 10, 100)),
                        scale = TRUE)
+ggplot(data = svm_tuning_imp$performances, aes(x = cost, y = error)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Error de clasificación vs hiperparámetro C") +
+  theme_bw()
+
 svm_tuning_imp$best.parameters
 
 modelo_svc_imp <- svm(Sex ~ ., data = table1.4, 
                       kernel = "linear", 
-                      cost = 10, 
+                      cost = 100, 
                       scale = TRUE)
 
 predicciones_imp = predict(modelo_svc_imp, table1.4)
 
 confusionMatrix(predicciones_imp, table1.4$Sex)
 
-
-
 # ann
+
+
+
 
 
 
