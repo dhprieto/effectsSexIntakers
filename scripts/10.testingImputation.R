@@ -48,17 +48,12 @@ softRandomFilling <- function(tabla){
       tabla[is.na(tabla[[var]]), var][i] <- runif(1,
                                              min= min(na.omit(tabla[[var]])), 
                                              max= max(na.omit(tabla[[var]])))
-    
-    
+      }
     }
-    
-    }
-  
-  
   } 
-  
   return(tabla)
 }
+
 
 zeroOneRandomFilling <- function(tabla){
   
@@ -241,6 +236,13 @@ modelo_svc_imp <- svm(Sex ~ ., data = table1.4[tr.id_imp,],
 predicciones_imp <- predict(modelo_svc_imp, table1.4[-tr.id_imp,])
 
 confusionMatrix(predicciones_imp, table1.4[-tr.id_imp,]$Sex)
+
+# naivebayes ----
+
+
+naiveBayes(Sex ~ ., data = table1.4)
+
+
 
 # ann ----
 
