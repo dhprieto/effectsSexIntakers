@@ -100,9 +100,6 @@ tr.id_imp <- createDataPartition(table1.4$Sex, p = 0.7, list=F)
 tr.id_srandom <- createDataPartition(table1.4_srandom$Sex, p = 0.7, list=F)
 tr.id_frandom <- createDataPartition(table1.4_frandom$Sex, p = 0.7, list=F)
 
-
-
-
 hist(table1.4_frandom$VA)
 hist(table1.4_srandom$VA)
 
@@ -239,45 +236,84 @@ confusionMatrix(predicciones_imp, table1.4[-tr.id_imp,]$Sex)
 
 # naivebayes ----
 
+### nona
 
-naiveBayes(Sex ~ ., data = table1.4)
+model_nB_nona <- naiveBayes(Sex ~ ., data = table1.3_nona[tr.id_nona,])
+predicciones_nona <- predict(model_nB_nona, table1.3_nona[-tr.id_nona,])
 
+confusionMatrix(predicciones_nona, table1.3_nona[-tr.id_nona,]$Sex)
+
+### soft random
+
+model_nB_sran <- naiveBayes(Sex ~ ., data = table1.4_srandom[tr.id_srandom,])
+predicciones_sran <- predict(model_nB_sran, table1.4_srandom[-tr.id_srandom,])
+
+confusionMatrix(predicciones_sran, table1.4_srandom[-tr.id_srandom,]$Sex)
+
+### full random
+
+model_nB_fran <- naiveBayes(Sex ~ ., data = table1.4_frandom[tr.id_frandom,])
+predicciones_fran <- predict(model_nB_fran, table1.4_frandom[-tr.id_frandom,])
+
+confusionMatrix(predicciones_fran, table1.4_frandom[-tr.id_frandom,]$Sex)
+
+### mice
+
+model_nB_mice <- naiveBayes(Sex ~ ., data = table1.4[tr.id_imp,])
+predicciones_mice <- predict(model_nB_mice, table1.4[-tr.id_imp,])
+
+confusionMatrix(predicciones_mice, table1.4[-tr.id_imp,]$Sex)
 
 
 # ann ----
 
-nn_noimp <- nnet(Sex ~ ., data = table1.3,
+set.seed(123)
+
+### nona
+
+model_nn_nona <- nnet(Sex ~ ., data = table1.3_nona[tr.id_nona,],
                  size = 3, maxit=10000,
                  decay = .001, rang = 0.1,
                  na.action = na.omit, skip = T)
 
-pred_noimp <- predict(nn_noimp, newdata = na.omit(table1.3), type = "class")
+pred_nn_nona <- predict(model_nn_nona, newdata = table1.3_nona[-tr.id_nona,], type = "class")
 
-confusionMatrix(factor(pred_noimp), na.omit(table1.3)$Sex)
+confusionMatrix(factor(pred_nn_nona), table1.3_nona[-tr.id_nona,]$Sex)
 
-# random imp
+# soft random
 
-nn_random_imp <- nnet(Sex ~ ., data = table1.4_random,
+model_nn_sran <- nnet(Sex ~ ., data = table1.4_srandom[tr.id_srandom,],
                  size = 3, maxit=10000,
                  decay = .001, rang = 0.1,
                  na.action = na.omit, skip = T)
 
+pred_nn_sran <- predict(model_nn_sran, newdata = table1.4_srandom[-tr.id_srandom,], type = "class")
 
+confusionMatrix(factor(pred_nn_sran), table1.4_srandom[-tr.id_srandom,]$Sex)
 
-pred_random_imp <- predict(nn_random_imp, newdata = table1.4_random, type = "class")
+##### accuracy 0.5 -> not the expected result
 
-confusionMatrix(factor(pred_random_imp), table1.4_random$Sex)
+# full random
+
+model_nn_fran <- nnet(Sex ~ ., data = table1.4_frandom[tr.id_frandom,],
+                      size = 3, maxit=10000,
+                      decay = .001, rang = 0.1,
+                      na.action = na.omit, skip = T)
+
+pred_nn_fran <- predict(model_nn_fran, newdata = table1.4_frandom[-tr.id_frandom,], type = "class")
+
+confusionMatrix(factor(pred_nn_fran), table1.4_frandom[-tr.id_frandom,]$Sex)
 
 # mice imp
 
-nn_mice_imp <- nnet(Sex ~ ., data = table1.4,
+model_nn_mice <- nnet(Sex ~ ., data = table1.4[tr.id_imp,],
                     size = 3, maxit=10000,
                     decay = .001, rang = 0.1,
                     na.action = na.omit, skip = T)
 
-pred_mice_imp <- predict(nn_mice_imp, newdata = table1.4, type = "class")
+pred_nn_mice <- predict(model_nn_mice, newdata = table1.4[-tr.id_imp,], type = "class")
 
-confusionMatrix(factor(pred_mice_imp), table1.4$Sex)
+confusionMatrix(factor(pred_nn_mice), table1.4[-tr.id_imp,]$Sex)
 
 # main test function -----
 
