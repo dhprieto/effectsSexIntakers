@@ -139,10 +139,10 @@ rf_impsRan <- randomForest(Sex ~.,
                          mtry=4 
                          )
 
-floor(sqrt(ncol(table1.4_srandom[tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")])))
-
-if (!is.null(y) && !is.factor(y))
-  max(floor(ncol(x)/3), 1) else floor(sqrt(ncol(x))),
+# floor(sqrt(ncol(table1.4_srandom[tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")])))
+# 
+# if (!is.null(y) && !is.factor(y))
+#   max(floor(ncol(x)/3), 1) else floor(sqrt(ncol(x))),
 
 # imp full random
 
