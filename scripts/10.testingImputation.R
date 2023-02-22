@@ -115,29 +115,48 @@ sapply(table1.3, function(y) sum(length(which(is.na(y)))))
 
 rf_noimp <- randomForest(Sex ~., x = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")], 
                          y = table1.3_nona[tr.id_nona,"Sex"],
-                         xtest = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")],
-                         ytest = table1.3_nona[-tr.id_nona,"Sex"], 
-                         na.action = na.omit)
+                         xtest = table1.3_nona[!tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")],
+                         ytest = table1.3_nona[!tr.id_nona,"Sex"])
+
+
+x = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")]
+y = table1.3_nona[tr.id_nona,"Sex"]
+xtest = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")]
+ytest = table1.3_nona[-tr.id_nona,"Sex"]
 
 confusionMatrix(predict(rf_noimp, table1.3_nona[-tr.id_nona,]), 
                 table1.3_nona[-tr.id_nona,]$Sex)
  
 # imp soft random
 
-rf_impsRan <- randomForest(Sex ~ ., data = table1.4_srandom[tr.id_srandom,])
+rf_impsRan <- randomForest(Sex ~ ., data = table1.4_srandom[tr.id_srandom,], )
 tuneRF()
 confusionMatrix(predict(rf_impsRan, table1.4_srandom[-tr.id_srandom,]), 
                 table1.4_srandom[-tr.id_srandom,]$Sex)
 
 
 rf_impsRan <- randomForest(Sex ~., 
-                           x = table1.4_srandom[tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")], 
+                           x = table1.4_srandom[tr.id_srandom,!(colnames(table1.4_srandom) %in% c("Sex", "Time", "Sweetener"))], 
                          y = table1.4_srandom[tr.id_srandom,"Sex"],
-                         xtest = table1.4_srandom[-tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")],
-                         ytest = table1.4_srandom[-tr.id_srandom,"Sex"],
-                         ntree = 500,
-                         mtry=4 
-                         )
+                         xtest = table1.4_srandom[-tr.id_srandom,!(colnames(table1.4_srandom) %in% c
+                                                                   ("Sex", "Time", "Sweetener"))],
+                         ytest = table1.4_srandom[-tr.id_srandom,"Sex"])
+
+x = table1.4_srandom[tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")]
+y = table1.4_srandom[tr.id_srandom,"Sex"]
+xtest = table1.4_srandom[-tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")]
+ytest = table1.4_srandom[-tr.id_srandom,"Sex"]
+
+
+set.seed(123)
+rf_impsRan <- randomForest(Sex ~., data = table1.4_srandom, subset = tr.id_srandom, mtry=21, importance = T,
+                           xtest = table1.4_srandom[-tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")],
+                           ytest = table1.4_srandom[-tr.id_srandom,"Sex"], replace = F)
+
+predict(rf_impsRan, x)
+
+randomForest(medv~., data=Boston, subset=train, mtry=13, importance=TRUE, 
+             xtest=subset(testB, select=-medv), ytest=testB$medv)
 
 # floor(sqrt(ncol(table1.4_srandom[tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")])))
 # 
