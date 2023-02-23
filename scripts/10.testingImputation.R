@@ -111,6 +111,10 @@ sapply(table1.3, function(y) sum(length(which(is.na(y)))))
 
 # rf ----
 
+library("randomForestSRC")
+
+rf_prueba <- randomForestSRC::
+
 # no imp, no na
 
 rf_noimp <- randomForest(Sex ~., x = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")], 
@@ -149,9 +153,14 @@ ytest = table1.4_srandom[-tr.id_srandom,"Sex"]
 
 
 set.seed(123)
+rf_impsRan <- randomForest(Sex ~., data = table1.4, subset = tr.id_srandom, mtry=21, importance = T,
+                           xtest = table1.4[-tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")],
+                           ytest = table1.4[-tr.id_srandom,"Sex"], replace = F)
+
 rf_impsRan <- randomForest(Sex ~., data = table1.4_srandom, subset = tr.id_srandom, mtry=21, importance = T,
                            xtest = table1.4_srandom[-tr.id_srandom,!(colnames(table1.4_srandom) %in% "Sex")],
                            ytest = table1.4_srandom[-tr.id_srandom,"Sex"], replace = F)
+
 
 predict(rf_impsRan, x)
 
