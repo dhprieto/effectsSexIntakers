@@ -142,6 +142,19 @@ caret::recall(table1.4$Sex, rf_prueba_mice_class$class.oob)
 accuracy()
 uwu <- predict(object = rf_prueba_mice, newdata = table1.4 %>% select(-DHPAA))
 uwu$predicted
+
+library(class)
+
+train_frandom = table1.4_frandom[tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
+train_frandom_labels = table1.4_frandom[tr.id_frandom,"Sex"]
+test_frandom = table1.4_srandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
+# ytest = table1.4_srandom[-tr.id_frandom,"Sex"]
+
+
+knn_prueba <- knn(train = train_frandom, test = test_frandom, cl=train_frandom_labels, k = 13)
+
+
+
 # no imp, no na
 
 rf_noimp <- randomForest(Sex ~., x = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")], 
