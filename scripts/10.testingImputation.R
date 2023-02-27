@@ -67,7 +67,7 @@ zeroOneRandomFilling <- function(tabla){
       
       for (i in rev(seq(1, length(tabla[is.na(tabla[[var]]), var])))){
         
-        tabla[is.na(tabla[[var]]), var][i] <- runif(1, min= 0,max= 1)
+        tabla[is.na(tabla[[var]]), var][i] <- runif(1, min= -1,max= 2)
         
         
       }
@@ -113,8 +113,35 @@ sapply(table1.3, function(y) sum(length(which(is.na(y)))))
 
 library("randomForestSRC")
 
-rf_prueba <- randomForestSRC::
+rf_prueba_nona_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.3_nona, seed = 123)
+rf_prueba_mice_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.4, seed = 123)
+rf_prueba_fran_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.4_frandom, seed = 123)
 
+rf_prueba_nona_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.3_nona, seed = 123)
+rf_prueba_mice_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.4, seed = 123)
+rf_prueba_fran_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.4_frandom, seed = 123)
+
+table1.4_frandom$Sex
+
+library(Metrics)
+library(randomForestSRC)
+
+mae(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
+rmse(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
+
+mae(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
+rmse(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
+
+mae(table1.4$DHPAA, rf_prueba_mice$predicted)
+rmse(table1.4$DHPAA, rf_prueba_mice$predicted)
+
+caret::recall(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+caret::recall(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
+caret::recall(table1.4$Sex, rf_prueba_mice_class$class.oob)
+
+accuracy()
+uwu <- predict(object = rf_prueba_mice, newdata = table1.4 %>% select(-DHPAA))
+uwu$predicted
 # no imp, no na
 
 rf_noimp <- randomForest(Sex ~., x = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% "Sex")], 

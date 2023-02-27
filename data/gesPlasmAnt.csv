@@ -1,0 +1,48 @@
+met,factor,imp,ges
+CA,Time,NO,0.2
+CA-G,Sex,NO,0.02
+Total CA,Time,NO,0.128
+DHPAA,Time,NO,0.118
+DHPAA,Sex,NO,0.03
+DHPAA-G,Sweetener,NO,0.096
+DHPAA-GG,Sweetener,NO,0.101
+DHPAA-GG,Time,NO,0.098
+DHPAA-GS,Sex,NO,0.033
+DHPAA-GS,Sweetener,NO,0.056
+DHPAA-GS,Time,NO,0.071
+Total DHPAA,Time,NO,0.204
+Total DHPAA,Sex,NO,0.034
+Total TFA,Time,NO,0.01
+VA-GG,Time,NO,0.244
+VA-GG,Sweetener,NO,0.184
+VA-S,Time,NO,0.103
+VA-S,Sweetener,NO,0.082
+VA-GS,Time,NO,0.051
+VA-SS,Time,NO,0.051
+CA,Time,SI,0.19
+CA-G,Time,SI,0.021
+CA-G,Sex,SI,0.02
+CA-S,Time,SI,0.013
+Total CA,Time,SI,0.123
+DHPAA,Time,SI,0.112
+DHPAA,Sex,SI,0.032
+DHPAA-G,Time,SI,0.101
+DHPAA-G,Sex,SI,0.014
+DHPAA-G,Sweetener,SI,0.076
+DHPAA-GG,Time,SI,0.121
+DHPAA-GG,Sweetener,SI,0.093
+DHPAA-GS,Time,SI,0.065
+DHPAA-GS,Sex,SI,0.019
+DHPAA-GS,Sweetener,SI,0.041
+Total DHPAA,Time,SI,0.199
+Total DHPAA,Sex,SI,0.035
+VA,Time,SI,0.227
+VA-GG,Time,SI,0.246
+VA-GG,Sweetener,SI,0.188
+VA-S,Time,SI,0.079
+VA-S,Sweetener,SI,0.035
+VA-GS,Time,SI,0.056
+VA-SS,Time,SI,0.062
+Total VA,Time,SI,0.362
+Total VA,Sweetener,SI,0.216
+,,,
