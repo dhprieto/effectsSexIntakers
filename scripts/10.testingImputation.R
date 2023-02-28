@@ -121,7 +121,18 @@ rf_prueba_nona_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.3_nona, se
 rf_prueba_mice_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.4, seed = 123)
 rf_prueba_fran_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.4_frandom, seed = 123)
 
-table1.4_frandom$Sex
+
+rf_test_predict_reg_nona <- predict(rf_prueba_nona_reg, 
+                                    newdata = table1.3_nona[-tr.id_nona, !(colnames(table1.3_nona) %in% "DHPAA")])
+
+rf_test_predict_reg_fran <- predict(rf_prueba_fran_reg, 
+                                    newdata = table1.4_frandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% "DHPAA")],)
+
+rf_test_predict_reg_mice <- predict(rf_prueba_mice_reg, 
+                                    newdata = table1.4[-tr.id_imp,!(colnames(table1.4) %in% "DHPAA")],)
+
+
+
 
 library(Metrics)
 library(randomForestSRC)
@@ -139,19 +150,121 @@ caret::recall(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
 caret::recall(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
 caret::recall(table1.4$Sex, rf_prueba_mice_class$class.oob)
 
-accuracy()
-uwu <- predict(object = rf_prueba_mice, newdata = table1.4 %>% select(-DHPAA))
-uwu$predicted
+caret::precision(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+caret::precision(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
+caret::precision(table1.4$Sex, rf_prueba_mice_class$class.oob)
+
+caret::confusionMatrix(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+caret::confusionMatrix(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
+caret::confusionMatrix(table1.4$Sex, rf_prueba_mice_class$class.oob)
+
+
+
+accuracy(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
 
 library(class)
 
+train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
+train_nona_labels = table1.3_nona[tr.id_nona,"Sex"]
+test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
+test_nona_labels = table1.3_nona[-tr.id_nona,"Sex"]
+
 train_frandom = table1.4_frandom[tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
 train_frandom_labels = table1.4_frandom[tr.id_frandom,"Sex"]
-test_frandom = table1.4_srandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
-# ytest = table1.4_srandom[-tr.id_frandom,"Sex"]
+test_frandom = table1.4_frandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
+test_frandom_labels = table1.4_frandom[-tr.id_frandom,"Sex"]
 
 
-knn_prueba <- knn(train = train_frandom, test = test_frandom, cl=train_frandom_labels, k = 13)
+
+train_mice = table1.4[tr.id_imp,!(colnames(table1.4) %in% c("Sweetener","Sex", "Time"))]
+train_mice_labels = table1.4[tr.id_imp,"Sex"]
+test_mice = table1.4[-tr.id_imp,!(colnames(table1.4) %in% c("Sweetener","Sex", "Time"))]
+test_mice_labels = table1.4[-tr.id_imp,"Sex"]
+
+
+knn_nona_class <- knn(train = train_nona, test = test_nona, cl=train_nona_labels, k = 6)
+knn_frandom_class <- knn(train = train_frandom, test = test_frandom, cl=train_frandom_labels, k = 13)
+knn_mice_class <- knn(train = train_mice, test = test_mice, cl=train_mice_labels, k = 13)
+
+caret::recall(test_nona_labels, knn_nona_class)
+caret::recall(test_frandom_labels, knn_frandom_class)
+caret::recall(test_mice_labels, knn_mice_class)
+
+caret::confusionMatrix(test_nona_labels, knn_nona_class)
+caret::confusionMatrix(test_frandom_labels, knn_frandom_class)
+caret::confusionMatrix(test_mice_labels, knn_mice_class)
+
+caret::precision(test_nona_labels, knn_nona_class)
+caret::precision(test_frandom_labels, knn_frandom_class)
+caret::precision(test_mice_labels, knn_mice_class)
+
+# reg
+train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
+train_nona_labels = table1.3_nona[tr.id_nona,"DHPAA"]
+test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
+test_nona_labels = table1.3_nona[-tr.id_nona,"DHPAA"]
+
+train_frandom = table1.4_frandom[tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
+train_frandom_labels = table1.4_frandom[tr.id_frandom,"DHPAA"]
+test_frandom = table1.4_frandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
+test_frandom_labels = table1.4_frandom[-tr.id_frandom,"DHPAA"]
+
+train_mice = table1.4[tr.id_imp,!(colnames(table1.4) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
+train_mice_labels = table1.4[tr.id_imp,"DHPAA"]
+test_mice = table1.4[-tr.id_imp,!(colnames(table1.4) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
+test_mice_labels = table1.4[-tr.id_imp,"DHPAA"]
+
+knn_nona_reg <- knnreg(x = train_nona, y=train_nona_labels)
+ytest_nona <- predict(knn_nona_reg, test_nona)
+
+
+knn_frandom_reg <- knnreg(x = train_frandom, y=train_frandom_labels)
+ytest_frandom <-predict(knn_frandom_reg, test_frandom)
+
+
+knn_mice_reg <- knnreg(x = train_mice, y=train_mice_labels)
+ytest_mice <-predict(knn_mice_reg, test_mice)
+
+
+mae(test_nona_labels, ytest_nona)
+rmse(test_nona_labels, ytest_nona)
+
+mae(test_frandom_labels, ytest_frandom)
+rmse(test_frandom_labels, ytest_frandom)
+
+mae(test_mice_labels, ytest_mice)
+rmse(test_mice_labels, ytest_mice)
+
+
+test_individuals = 1:length(test_mice_labels)
+test_nona_individuals = 1:length(test_nona_labels)
+
+layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+
+plot(test_individuals, test_mice_labels, col = "red", type = "l", lwd=2,
+     main = "A. DHPAA values prediction with MICE imputation")
+lines(test_individuals, ytest_mice, col = "blue", lwd=2)
+lines(test_individuals, rf_test_predict_reg_mice$predicted, col = "green", lwd=2)
+lines(test_individuals, )
+legend("topright",  legend = c("original", "predicted-KNN", "predicted-RF"), 
+       fill = c("red", "blue", "green"), col = 1:2,  cex=0.9, text.width = 10)
+grid()
+
+plot(test_nona_individuals, test_nona_labels, col = "red", type = "l", lwd=2,
+     main = "B. DHPAA values prediction with NoNa procedure")
+lines(test_nona_individuals, ytest_nona, col = "blue", lwd=2) 
+lines(test_nona_individuals, rf_test_predict_reg_nona$predicted, col = "green", lwd=2)
+legend("topright",  legend = c("original", "predicted-KNN", "predicted-RF"), 
+       fill = c("red", "blue", "green"), col = 1:2,  cex=0.9, text.width = 3)
+grid()
+
+plot(test_individuals, test_frandom_labels, col = "red", type = "l", lwd=2,
+     main = "C. DHPAA values prediction with Random imputation")
+lines(test_individuals, ytest_frandom, col = "blue", lwd=2)
+lines(test_individuals, rf_test_predict_reg_fran$predicted, col = "green", lwd=2)
+legend("topright",  legend = c("original", "predicted-KNN", "predicted-RF" ), 
+       fill = c("red", "blue", "green"), col = 1:2,  cex=0.9,text.width = 10,  )
+grid()
 
 
 
