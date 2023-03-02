@@ -13,7 +13,9 @@ library(ggpubr)
 library(randomForest)
 library(e1071)
 library(nnet)
-
+library(Metrics)
+library(randomForestSRC)
+library(class)
 # scripts ----
 
 source("scripts/1.readingFilling.R") #readingFillingGrouping & anthroSex
@@ -134,8 +136,6 @@ rf_test_predict_reg_mice <- predict(rf_prueba_mice_reg,
 
 
 
-library(Metrics)
-library(randomForestSRC)
 
 mae(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
 rmse(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
@@ -198,7 +198,7 @@ caret::precision(test_nona_labels, knn_nona_class)
 caret::precision(test_frandom_labels, knn_frandom_class)
 caret::precision(test_mice_labels, knn_mice_class)
 
-# reg
+### reg ----
 train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
 train_nona_labels = table1.3_nona[tr.id_nona,"DHPAA"]
 test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
@@ -236,34 +236,40 @@ mae(test_mice_labels, ytest_mice)
 rmse(test_mice_labels, ytest_mice)
 
 
-test_individuals = 1:length(test_mice_labels)
+test_individuals = 1:length(ytest_mice)
 test_nona_individuals = 1:length(test_nona_labels)
 
-layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+#layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE)
+### plot reg ----
+df = cbind.data.frame(test_individuals, test_mice_labels, ytest_mice, rf_test_predict_reg_mice$predicted)
+ggplot(data = df, aes(test_individuals, y = test_mice_labels)) + geom_point(colour = "red") + 
+  geom_boxplot(colour= "blue",aes(test_individuals, ytest_mice)) +
+  geom_boxplot(colour= "green",aes(test_individuals, rf_test_predict_reg_mice$predicted)) 
 
-plot(test_individuals, test_mice_labels, col = "red", type = "l", lwd=2,
+par(mfrow = c(3,1))
+
+plot(test_individuals, test_mice_labels, col = "red", type = "p", lwd=2,
      main = "A. DHPAA values prediction with MICE imputation")
-lines(test_individuals, ytest_mice, col = "blue", lwd=2)
-lines(test_individuals, rf_test_predict_reg_mice$predicted, col = "green", lwd=2)
-lines(test_individuals, )
+points(test_individuals, ytest_mice, col = "blue", lwd=2)
+points(test_individuals, rf_test_predict_reg_mice$predicted, col = "green", lwd=2)
 legend("topright",  legend = c("original", "predicted-KNN", "predicted-RF"), 
-       fill = c("red", "blue", "green"), col = 1:2,  cex=0.9, text.width = 10)
+       fill = c("red", "blue", "green"), cex=0.3)
 grid()
 
-plot(test_nona_individuals, test_nona_labels, col = "red", type = "l", lwd=2,
+plot(test_nona_individuals, test_nona_labels, col = "red", type = "p", lwd=2,
      main = "B. DHPAA values prediction with NoNa procedure")
-lines(test_nona_individuals, ytest_nona, col = "blue", lwd=2) 
-lines(test_nona_individuals, rf_test_predict_reg_nona$predicted, col = "green", lwd=2)
+points(test_nona_individuals, ytest_nona, col = "blue", lwd=2) 
+points(test_nona_individuals, rf_test_predict_reg_nona$predicted, col = "green", lwd=2)
 legend("topright",  legend = c("original", "predicted-KNN", "predicted-RF"), 
-       fill = c("red", "blue", "green"), col = 1:2,  cex=0.9, text.width = 3)
+       fill = c("red", "blue", "green"),cex=0.3)
 grid()
 
-plot(test_individuals, test_frandom_labels, col = "red", type = "l", lwd=2,
+plot(test_individuals, test_frandom_labels, col = "red", type = "p", lwd=2,
      main = "C. DHPAA values prediction with Random imputation")
-lines(test_individuals, ytest_frandom, col = "blue", lwd=2)
-lines(test_individuals, rf_test_predict_reg_fran$predicted, col = "green", lwd=2)
+points(test_individuals, ytest_frandom, col = "blue", lwd=2)
+points(test_individuals, rf_test_predict_reg_fran$predicted, col = "green", lwd=2)
 legend("topright",  legend = c("original", "predicted-KNN", "predicted-RF" ), 
-       fill = c("red", "blue", "green"), col = 1:2,  cex=0.9,text.width = 10,  )
+       fill = c("red", "blue", "green"), cex=0.3)
 grid()
 
 
