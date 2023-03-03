@@ -102,15 +102,6 @@ tr.id_imp <- createDataPartition(table1.4$Sex, p = 0.7, list=F)
 tr.id_srandom <- createDataPartition(table1.4_srandom$Sex, p = 0.7, list=F)
 tr.id_frandom <- createDataPartition(table1.4_frandom$Sex, p = 0.7, list=F)
 
-hist(table1.4_frandom$VA)
-hist(table1.4_srandom$VA)
-
-sapply(table1.3, function(y) sum(length(which(is.na(y)))))
-
-
-#
-
-
 # rf ----
 
 library("randomForestSRC")
@@ -246,7 +237,91 @@ ggplot(data = df, aes(test_individuals, y = test_mice_labels)) + geom_point(colo
   geom_boxplot(colour= "blue",aes(test_individuals, ytest_mice)) +
   geom_boxplot(colour= "green",aes(test_individuals, rf_test_predict_reg_mice$predicted)) 
 
+# resid function ----
+
+mae(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
+rmse(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
+
+mae(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
+rmse(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
+
+mae(table1.4$DHPAA, rf_prueba_mice$predicted)
+rmse(table1.4$DHPAA, rf_prueba_mice$predicted)
+
+
+
+
+df1 = data.frame(MICE_KNN = test_mice_labels-ytest_mice, 
+                 frandom_KNN = test_frandom_labels-ytest_frandom)
+df3_RF = data.frame(MICE_RF = table1.4$DHPAA - rf_prueba_mice$predicted,
+                 frandom_RF = table1.4_frandom$DHPAA - rf_prueba_fran_reg$predicted)
+df4_RF = data.frame(NoNA_RF = table1.3_nona$DHPAA - rf_prueba_nona_reg$predicted)
+
+par(mfrow=c(1,1))
+boxplot(df1)
+melt(df1)
+
+ggplot(data = df1, aes(test_mice_labels, y = test_mice_labels-ytest_mice)) + 
+  geom_boxplot(colour = "red")+ 
+  geom_boxplot(colour= "blue",aes(test_frandom_labels, test_mice_labels-ytest_frandom)) + 
+  geom_boxplot(colour= "green",aes(test_nona_labels, rf_test_predict_reg_mice$predicted)) 
+
+p1 <- ggplot(df1, aes(factor(variable,level = unique(df1$variable)),as.numeric(value))) +
+  geom_boxplot()+
+  ggtitle(paste("A.Time Flavanones-Plasma"))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))+
+  labs(y = "residues", x = "variables", fill = "Time")
+
+p2 <- ggplot(df2, aes(factor(variable,level = unique(df2$variable)),as.numeric(value))) +
+  geom_boxplot()+
+  ggtitle(paste("A.Time Flavanones-Plasma"))+ expand_limits(y = c(0.6,-0.4))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5))+
+  labs(y = "residues", x = "variables", fill = "Time")
+
+df2 = data.frame(NoNa = test_nona_labels - ytest_nona)
 par(mfrow = c(3,1))
+
+ggarrange(p1,p2)
+
+plot.new()
+
+set.seed(123)
+
+# Fondo gris claro
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4],
+     col = "#ebebeb")
+
+# Añadimos un grid blanco
+grid(nx = NULL, ny = NULL, col = "white", lty = 1,
+     lwd = par("lwd"), equilogs = TRUE)
+
+lista_boxplot <- list (NoNa_KNN = df2$NoNa, Random_KNN = df1$frandom, MICE_KNN =df1$mice,
+                       NoNa_RF = df4_RF$NoNA_RF, Random_RF = df3_RF$frandom_RF, 
+                       MICE_RF =df3_RF$MICE_RF)
+
+# Boxplot
+par(new = TRUE)
+boxplot(lista_boxplot, # Datos
+        horizontal = FALSE, # Horizontal o vertical
+        lwd = 2, # Lines width
+        col = rainbow(length(lista_boxplot)), # Color
+        xlab = "Procedure_Algorithm",  # Etiqueta eje X
+        ylab = "Residues",  # Etiqueta eje Y
+        main = "Residues from DHPAA concentration prediction with 
+        different models and imputations", # Título
+        notch = TRUE, # Añade intervalos de confianza para la mediana
+        border = "black",  # Color del borde del boxplot
+        outpch = 25,       # Símbolo para los outliers
+        outbg = "green",   # Color de los datos atípicos
+        whiskcol = "blue", # Color de los bigotes
+        whisklty = 2,      # Tipo de línea para los bigotes
+        lty = 1) # Tipo de línea (caja y mediana)
+
+
+boxplot(list (NoNa = df2$NoNa, Random = df1$frandom, MICE =df1$mice))
+
+
+
 
 plot(test_individuals, test_mice_labels, col = "red", type = "p", lwd=2,
      main = "A. DHPAA values prediction with MICE imputation")
