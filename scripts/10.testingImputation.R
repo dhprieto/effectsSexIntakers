@@ -205,11 +205,11 @@ RFFit_mice$results[rownames(RFFit_mice$bestTune),]
 RFFit_frandom$finalModel
 
 
-  results <- resamples(list(RF_mice=RFFit_mice, RF_frandom = RFFit_frandom, RF_nona = RFFit_nona,
-                          KNN_mice = knnFit_mice, KNN_frandom = knnFit_frandom, KNN_nona = knnFit_nona))
+  results <- resamples(list(RF_mice=RFFit_mice, RF_frandom = RFFit_frandom,
+                          KNN_mice = knnFit_mice, KNN_frandom = knnFit_frandom))
 # box and whisker plots to compare models
 scales <- list(x=list(relation="free"), y=list(relation="free"))
-bwplot(results, scales=scales, panel= panel.violin)
+bwplot(results, scales=scales, main = "Performance metrics for different combinations of imputations and models")
 densityplot(results, scales=scales, pch = "|")
 dotplot(results, scales=scales)
 
