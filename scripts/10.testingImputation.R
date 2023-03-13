@@ -1,5 +1,7 @@
 # testing imputation
 
+##### !!!!! IMPUTATION MODIFIED<
+
 # libraries ----
 
 library(tidyverse)
@@ -16,6 +18,8 @@ library(nnet)
 library(Metrics)
 library(randomForestSRC)
 library(class)
+library(lares)
+
 # scripts ----
 
 source("scripts/1.readingFilling.R") #readingFillingGrouping & anthroSex
@@ -58,7 +62,8 @@ softRandomFilling <- function(tabla){
 
 
 zeroOneRandomFilling <- function(tabla){
-  
+
+  set.seed(321)  
   for (var in names(tabla)){
     cat(var,"\n") # Print the variable name for debug purposes
     flush.console()
@@ -91,24 +96,56 @@ table1.3$Sweetener <- factor(table1.3$Sweetener)
 table1.3$Time <- factor(table1.3$Time)
 table1.3 <- table1.3 %>% select (-c(numVol, grouping, Weight, BMI, Fat, CVRI, Bpmin, Bpmax, Frec))
 table1.3_nona <- na.omit(table1.3)
-table1.4 <- factoringImputating(table1.3)
+impObject <- factoringImputating(table1.3)
+table1.4 <- impObject[[2]]
 table1.4_srandom <- softRandomFilling(table1.3)
 table1.4_frandom <- zeroOneRandomFilling(table1.3)
 
 ## training/test set ----
+
+set.seed(123)
 
 tr.id_nona <- createDataPartition(table1.3_nona$Sex, p = 0.7, list=F)
 tr.id_imp <- createDataPartition(table1.4$Sex, p = 0.7, list=F)
 tr.id_srandom <- createDataPartition(table1.4_srandom$Sex, p = 0.7, list=F)
 tr.id_frandom <- createDataPartition(table1.4_frandom$Sex, p = 0.7, list=F)
 
+# train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
+# train_nona_labels = table1.3_nona[tr.id_nona,"Sex"]
+# test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
+# test_nona_labels = table1.3_nona[-tr.id_nona,"Sex"]
+# 
+# train_frandom = table1.4_frandom[tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener", "Time"))]
+# train_frandom_labels = table1.4_frandom[tr.id_frandom,"Sex"]
+# test_frandom = table1.4_frandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener", "Time"))]
+# test_frandom_labels = table1.4_frandom[-tr.id_frandom,"Sex"]
+# 
+# train_mice = table1.4[tr.id_imp,!(colnames(table1.4) %in% c("Sweetener", "Time"))]
+# train_mice_labels = table1.4[tr.id_imp,"Sex"]
+# test_mice = table1.4[-tr.id_imp,!(colnames(table1.4) %in% c("Sweetener", "Time"))]
+# test_mice_labels = table1.4[-tr.id_imp,"Sex"]
+
 # rf ----
 
-library("randomForestSRC")
+#### class ----
 
-rf_prueba_nona_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.3_nona, seed = 123)
-rf_prueba_mice_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.4, seed = 123)
-rf_prueba_fran_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.4_frandom, seed = 123)
+rf_prueba_nona_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.3_nona, seed = 321)
+rf_prueba_mice_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.4, seed = 321)
+rf_prueba_fran_class <- randomForestSRC::rfsrc(Sex ~ ., data = table1.4_frandom, seed = 321)
+
+caret::recall(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+caret::recall(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
+caret::recall(table1.4$Sex, rf_prueba_mice_class$class.oob)
+
+caret::precision(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+caret::precision(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
+caret::precision(table1.4$Sex, rf_prueba_mice_class$class.oob)
+
+caret::confusionMatrix(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+caret::confusionMatrix(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
+caret::confusionMatrix(table1.4$Sex, rf_prueba_mice_class$class.oob)
+
+#### reg ----
 
 rf_prueba_nona_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.3_nona, seed = 123)
 rf_prueba_mice_reg <- randomForestSRC::rfsrc(DHPAA ~ ., data = table1.4, seed = 123)
@@ -124,54 +161,70 @@ rf_test_predict_reg_fran <- predict(rf_prueba_fran_reg,
 rf_test_predict_reg_mice <- predict(rf_prueba_mice_reg, 
                                     newdata = table1.4[-tr.id_imp,!(colnames(table1.4) %in% "DHPAA")],)
 
-
-
-
-
 mae(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
 rmse(table1.3_nona$DHPAA, rf_prueba_nona_reg$predicted)
 
 mae(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
 rmse(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
 
-mae(table1.4$DHPAA, rf_prueba_mice$predicted)
-rmse(table1.4$DHPAA, rf_prueba_mice$predicted)
+mae(table1.4$DHPAA, rf_prueba_mice_reg$predicted)
+rmse(table1.4$DHPAA, rf_prueba_mice_reg$predicted)
 
-caret::recall(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
-caret::recall(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
-caret::recall(table1.4$Sex, rf_prueba_mice_class$class.oob)
+# knn ----
 
-caret::precision(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
-caret::precision(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
-caret::precision(table1.4$Sex, rf_prueba_mice_class$class.oob)
+#### class ----
 
-caret::confusionMatrix(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
-caret::confusionMatrix(table1.4_frandom$Sex, rf_prueba_fran_class$class.oob)
-caret::confusionMatrix(table1.4$Sex, rf_prueba_mice_class$class.oob)
+set.seed(400)
 
+ctrl <- trainControl(method="repeatedcv",repeats = 3, classProbs=TRUE,summaryFunction = twoClassSummary, seeds = 123)
 
+knnFit_nona <- train(Sex ~ ., data = table1.3_nona[tr.id_nona,], 
+                     method = "knn", trControl = ctrl, tuneLength = 20)
 
-accuracy(table1.3_nona$Sex, rf_prueba_nona_class$class.oob)
+knnFit_mice <- train(Sex ~ ., data = table1.4[tr.id_imp,], 
+                     method = "knn", trControl = ctrl, tuneLength = 20)
+knnFit_frandom <- train(Sex ~ ., data = table1.4_frandom[tr.id_frandom,], 
+                        method = "knn", trControl = ctrl, tuneLength = 20)
 
-library(class)
-
-train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
-train_nona_labels = table1.3_nona[tr.id_nona,"Sex"]
-test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
-test_nona_labels = table1.3_nona[-tr.id_nona,"Sex"]
-
-train_frandom = table1.4_frandom[tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
-train_frandom_labels = table1.4_frandom[tr.id_frandom,"Sex"]
-test_frandom = table1.4_frandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener","Sex", "Time"))]
-test_frandom_labels = table1.4_frandom[-tr.id_frandom,"Sex"]
+knnFit_nona$results[rownames(knnFit_nona$bestTune),]
+knnFit_frandom$results[rownames(knnFit_frandom$bestTune),]
+knnFit_mice$results[rownames(knnFit_mice$bestTune),]
 
 
+RFFit_nona<- train(Sex ~ ., data = table1.3_nona[tr.id_nona,], 
+             method = "rf", preProcess = c("center","scale"), trControl = ctrl, tuneLength = 20, )
 
-train_mice = table1.4[tr.id_imp,!(colnames(table1.4) %in% c("Sweetener","Sex", "Time"))]
-train_mice_labels = table1.4[tr.id_imp,"Sex"]
-test_mice = table1.4[-tr.id_imp,!(colnames(table1.4) %in% c("Sweetener","Sex", "Time"))]
-test_mice_labels = table1.4[-tr.id_imp,"Sex"]
+RFFit_mice <- train(Sex ~ ., data = table1.4[tr.id_imp,], method = "rf", 
+                    trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
+RFFit_frandom <- train(Sex ~ ., data = table1.4_frandom[tr.id_frandom,], method = "rf", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
 
+RFFit_nona$results[rownames(RFFit_nona$bestTune),]
+RFFit_frandom$results[rownames(RFFit_frandom$bestTune),]
+RFFit_mice$results[rownames(RFFit_mice$bestTune),]
+
+RFFit_frandom$finalModel
+
+
+  results <- resamples(list(RF_mice=RFFit_mice, RF_frandom = RFFit_frandom, RF_nona = RFFit_nona,
+                          KNN_mice = knnFit_mice, KNN_frandom = knnFit_frandom, KNN_nona = knnFit_nona))
+# box and whisker plots to compare models
+scales <- list(x=list(relation="free"), y=list(relation="free"))
+bwplot(results, scales=scales, panel= panel.violin)
+densityplot(results, scales=scales, pch = "|")
+dotplot(results, scales=scales)
+
+
+#Get the confusion matrix to see accuracy value and other parameter values
+precision(predict(knnFit_mice,newdata=table1.4[-tr.id_imp,] ), table1.4[-tr.id_imp,]$Sex )
+precision(predict(knnFit_frandom,newdata=table1.4_frandom[-tr.id_frandom,] ), 
+                table1.4_frandom[-tr.id_frandom,]$Sex )
+recall(predict(knnFit_mice,newdata=table1.4[-tr.id_imp,] ), table1.4[-tr.id_imp,]$Sex )
+recall(predict(knnFit_frandom,newdata=table1.4_frandom[-tr.id_frandom,] ), 
+          table1.4_frandom[-tr.id_frandom,]$Sex )
+
+
+
+#### class package "class"----
 
 knn_nona_class <- knn(train = train_nona, test = test_nona, cl=train_nona_labels, k = 6)
 knn_frandom_class <- knn(train = train_frandom, test = test_frandom, cl=train_frandom_labels, k = 13)
@@ -189,7 +242,9 @@ caret::precision(test_nona_labels, knn_nona_class)
 caret::precision(test_frandom_labels, knn_frandom_class)
 caret::precision(test_mice_labels, knn_mice_class)
 
+
 ### reg ----
+
 train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
 train_nona_labels = table1.3_nona[tr.id_nona,"DHPAA"]
 test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
@@ -231,6 +286,8 @@ test_individuals = 1:length(ytest_mice)
 test_nona_individuals = 1:length(test_nona_labels)
 
 #layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE)
+
+
 ### plot reg ----
 df = cbind.data.frame(test_individuals, test_mice_labels, ytest_mice, rf_test_predict_reg_mice$predicted)
 ggplot(data = df, aes(test_individuals, y = test_mice_labels)) + geom_point(colour = "red") + 
