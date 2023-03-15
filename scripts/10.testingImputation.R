@@ -1,6 +1,6 @@
 # testing imputation
 
-##### !!!!! IMPUTATION MODIFIED<
+##### !!!!! IMPUTATION MODIFIED to be RF  !!!!!!!!!! #####
 
 # libraries ----
 
@@ -88,7 +88,6 @@ zeroOneRandomFilling <- function(tabla){
 }
 
 
-
 # preprocessing ----
 
 table1.3$Sex <- factor(table1.3$Sex)
@@ -101,6 +100,58 @@ table1.4 <- impObject[[2]]
 table1.4_srandom <- softRandomFilling(table1.3)
 table1.4_frandom <- zeroOneRandomFilling(table1.3)
 
+# function test ----
+
+predictionTest <- function(tabla, predictorClass, predictorReg){
+
+  # set train/test 
+  
+  
+  set.seed(123)
+    
+  tr.id.class <- createDataPartition(tabla[,predictorClass], p = 0.7, list = F)
+  tr.id.reg <- createDataPartition(tabla[,predictorReg], p = 0.7, list = F)
+  
+  
+  # class
+  
+  ctrl <- trainControl(method="repeatedcv", repeats = 3, classProbs=TRUE, summaryFunction = twoClassSummary)
+  
+  predictorForm1 <- as.formula(paste(predictorClass, "~."))
+  
+  knnFit.class <- train(predictorForm1, data = tabla[tr.id.class,], 
+                       method = "knn", trControl = ctrl, tuneLength = 20)
+  
+  rfFit.class <- train(predictorForm1, data = tabla[tr.id.class,], 
+                     method = "rf", preProcess = c("center","scale"), trControl = ctrl, tuneLength = 20)
+  
+  
+  # reg
+  
+  ctrl.reg <- trainControl(method="repeatedcv", repeats = 3)
+  
+  predictorForm2 <- as.formula(paste(predictorReg, "~."))
+  
+  
+  knnFit.reg <- train(predictorForm2, data = tabla[tr.id.reg,], 
+                  method = "knn", trControl = ctrl.reg, tuneLength = 20)
+  
+  rfFit.reg <- train(predictorForm2, data = tabla[tr.id.reg,], 
+                method = "rf", preProcess = c("center","scale"), trControl = ctrl.reg, tuneLength = 20)
+  
+  
+  return(list(knnFit.class, rfFit.class, knnFit.reg, rfFit.reg))
+}
+
+
+outcome_1 <- predictionTest(table1.4, "Sex", "DHPAA")
+
+
+metricsOutcome <- function(outcomes){
+  outcomes[[1]]
+}
+
+
 ## training/test set ----
 
 set.seed(123)
@@ -109,21 +160,6 @@ tr.id_nona <- createDataPartition(table1.3_nona$Sex, p = 0.7, list=F)
 tr.id_imp <- createDataPartition(table1.4$Sex, p = 0.7, list=F)
 tr.id_srandom <- createDataPartition(table1.4_srandom$Sex, p = 0.7, list=F)
 tr.id_frandom <- createDataPartition(table1.4_frandom$Sex, p = 0.7, list=F)
-
-# train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
-# train_nona_labels = table1.3_nona[tr.id_nona,"Sex"]
-# test_nona = table1.3_nona[-tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time"))]
-# test_nona_labels = table1.3_nona[-tr.id_nona,"Sex"]
-# 
-# train_frandom = table1.4_frandom[tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener", "Time"))]
-# train_frandom_labels = table1.4_frandom[tr.id_frandom,"Sex"]
-# test_frandom = table1.4_frandom[-tr.id_frandom,!(colnames(table1.4_frandom) %in% c("Sweetener", "Time"))]
-# test_frandom_labels = table1.4_frandom[-tr.id_frandom,"Sex"]
-# 
-# train_mice = table1.4[tr.id_imp,!(colnames(table1.4) %in% c("Sweetener", "Time"))]
-# train_mice_labels = table1.4[tr.id_imp,"Sex"]
-# test_mice = table1.4[-tr.id_imp,!(colnames(table1.4) %in% c("Sweetener", "Time"))]
-# test_mice_labels = table1.4[-tr.id_imp,"Sex"]
 
 # rf ----
 
@@ -170,7 +206,7 @@ rmse(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
 mae(table1.4$DHPAA, rf_prueba_mice_reg$predicted)
 rmse(table1.4$DHPAA, rf_prueba_mice_reg$predicted)
 
-# knn ----
+# caret ----
 
 #### class ----
 
@@ -223,27 +259,7 @@ recall(predict(knnFit_frandom,newdata=table1.4_frandom[-tr.id_frandom,] ),
           table1.4_frandom[-tr.id_frandom,]$Sex )
 
 
-
-#### class package "class"----
-
-knn_nona_class <- knn(train = train_nona, test = test_nona, cl=train_nona_labels, k = 6)
-knn_frandom_class <- knn(train = train_frandom, test = test_frandom, cl=train_frandom_labels, k = 13)
-knn_mice_class <- knn(train = train_mice, test = test_mice, cl=train_mice_labels, k = 13)
-
-caret::recall(test_nona_labels, knn_nona_class)
-caret::recall(test_frandom_labels, knn_frandom_class)
-caret::recall(test_mice_labels, knn_mice_class)
-
-caret::confusionMatrix(test_nona_labels, knn_nona_class)
-caret::confusionMatrix(test_frandom_labels, knn_frandom_class)
-caret::confusionMatrix(test_mice_labels, knn_mice_class)
-
-caret::precision(test_nona_labels, knn_nona_class)
-caret::precision(test_frandom_labels, knn_frandom_class)
-caret::precision(test_mice_labels, knn_mice_class)
-
-
-### reg ----
+### knn reg ----
 
 train_nona = table1.3_nona[tr.id_nona,!(colnames(table1.3_nona) %in% c("Sweetener","Sex", "Time", "DHPAA"))]
 train_nona_labels = table1.3_nona[tr.id_nona,"DHPAA"]
@@ -285,10 +301,8 @@ rmse(test_mice_labels, ytest_mice)
 test_individuals = 1:length(ytest_mice)
 test_nona_individuals = 1:length(test_nona_labels)
 
-#layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE)
 
-
-### plot reg ----
+# plot reg ----
 df = cbind.data.frame(test_individuals, test_mice_labels, ytest_mice, rf_test_predict_reg_mice$predicted)
 ggplot(data = df, aes(test_individuals, y = test_mice_labels)) + geom_point(colour = "red") + 
   geom_boxplot(colour= "blue",aes(test_individuals, ytest_mice)) +
@@ -304,8 +318,6 @@ rmse(table1.4_frandom$DHPAA, rf_prueba_fran_reg$predicted)
 
 mae(table1.4$DHPAA, rf_prueba_mice$predicted)
 rmse(table1.4$DHPAA, rf_prueba_mice$predicted)
-
-
 
 
 df1 = data.frame(MICE_KNN = test_mice_labels-ytest_mice, 
@@ -609,6 +621,18 @@ set.seed(123)
 
 ### nona
 
+seeds <- vector(mode = "list", length = 11) #length is = (n_repeats*nresampling)+1
+for(i in 1:501) seeds[[i]]<- sample.int(n=1000, 1) 
+
+numFolds <- trainControl(method = 'cv', number = 10, classProbs = TRUE, verboseIter = TRUE, 
+                         summaryFunction = twoClassSummary, seeds = seeds)
+fit2 <- train(Sex ~ ., data = table1.4[tr.id_imp,], method = 'nnet', preProcess = c('center', 'scale'), 
+              trControl = numFolds, tuneGrid=expand.grid(size=c(10), decay=c(0.1)))
+
+fit3 <- train(Sex ~ ., data = table1.4_frandom[tr.id_frandom,], method = 'nnet', preProcess = c('center', 'scale'), 
+              trControl = numFolds, tuneGrid=expand.grid(size=c(1,10), decay=c(0.01, 0.1)))
+
+fit2$bestTune
 model_nn_nona <- nnet(Sex ~ ., data = table1.3_nona[tr.id_nona,],
                  size = 3, maxit=10000,
                  decay = .001, rang = 0.1,
