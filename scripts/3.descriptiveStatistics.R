@@ -3,7 +3,7 @@ source("scripts/2.normalizingFactoring.R")
 source("scripts/1.readingFilling.R")
 library("psych")
 library("modeest")
-library(skimr)  
+library("skimr")  
 
 estadisticosDescriptivos <- function (tabla) {
 

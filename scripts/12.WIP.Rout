@@ -1,0 +1,196 @@
+
+R version 4.1.1 (2021-08-10) -- "Kick Things"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> ### SCRIPT FOR WORKING ### 
+> 
+> ## made w/o removing bad vars... check it 
+> 
+> 
+> ##### Package names
+> # 
+> # packages <- c("tidyverse", "scales", "reshape2", "caret")
+> # # Install packages not yet installed
+> # installed_packages <- packages %in% rownames(installed.packages())
+> # if (any(installed_packages == FALSE)) {
+> #   install.packages(packages[!installed_packages])
+> # }
+> # 
+> # # Packages loading
+> # invisible(lapply(packages, library, character.only = TRUE))
+> 
+> # load scripts ----
+> 
+> source("scripts/1.readingFilling.R") #readingFillingGrouping & anthroSex
+-- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
+v dplyr     1.1.0     v readr     2.1.4
+v forcats   1.0.0     v stringr   1.5.0
+v ggplot2   3.4.1     v tibble    3.1.8
+v lubridate 1.9.2     v tidyr     1.3.0
+v purrr     1.0.1     
+-- Conflicts ------------------------------------------ tidyverse_conflicts() --
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()
+i Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+Warning messages:
+1: package 'ggplot2' was built under R version 4.1.3 
+2: package 'tibble' was built under R version 4.1.3 
+3: package 'tidyr' was built under R version 4.1.3 
+4: package 'readr' was built under R version 4.1.3 
+5: package 'purrr' was built under R version 4.1.3 
+6: package 'dplyr' was built under R version 4.1.3 
+7: package 'stringr' was built under R version 4.1.3 
+8: package 'forcats' was built under R version 4.1.3 
+9: package 'lubridate' was built under R version 4.1.3 
+> source("scripts/2.normalizingFactoring.R") #normalizingNumeric & factoringImputating
+
+Attaching package: 'scales'
+
+The following object is masked from 'package:purrr':
+
+    discard
+
+The following object is masked from 'package:readr':
+
+    col_factor
+
+
+Attaching package: 'mice'
+
+The following object is masked from 'package:stats':
+
+    filter
+
+The following objects are masked from 'package:base':
+
+    cbind, rbind
+
+Warning messages:
+1: package 'scales' was built under R version 4.1.3 
+2: package 'mice' was built under R version 4.1.3 
+> source("scripts/3.descriptiveStatistics.R") 
+
+Attaching package: 'psych'
+
+The following objects are masked from 'package:scales':
+
+    alpha, rescale
+
+The following objects are masked from 'package:ggplot2':
+
+    %+%, alpha
+
+Registered S3 method overwritten by 'rmutil':
+  method         from 
+  plot.residuals psych
+Warning messages:
+1: package 'psych' was built under R version 4.1.3 
+2: package 'modeest' was built under R version 4.1.3 
+3: package 'skimr' was built under R version 4.1.3 
+> source("scripts/4.variablesAnalysis.R") #timingCleanFeatures
+Loading required package: lattice
+
+Attaching package: 'caret'
+
+The following object is masked from 'package:purrr':
+
+    lift
+
+Warning message:
+package 'caret' was built under R version 4.1.3 
+> source("scripts/5.imputating.R")
+> source("scripts/10.testingImputation.R")
+> 
+> # functions ----
+> 
+> mainPredict <- function(pathToTable, pathTableName, predictorReg){
++   
++   message(paste("##### Starting analysis of ", sub(".csv",sub("data/","",pathTableName)), " table #####"))
++   
++   
++   set.seed(123)
++   
++   table1.0 <- readingFillingGrouping(pathToTable)
++   table1.1 <- anthroSex(table1.0)
++   table1.2 <- normalizingNumeric(table1.1)
++   table1.3 <- timingCleanFeatures(table1.2, pathTableName)
++   
++   # prepoccesing 
++   
++   table1.3$Sex <- factor(table1.3$Sex)
++   table1.3$Sweetener <- factor(table1.3$Sweetener)
++   table1.3$Time <- factor(table1.3$Time)
++   table1.3 <- table1.3 %>% select (-c(numVol, grouping, Weight, BMI, Fat, CVRI, Bpmin, Bpmax, Frec))
++   
++   # imputation 
++   
++   table1.3_nona <- na.omit(table1.3)
++   impObject <- factoringImputating(table1.3)
++   table1.4_mice <- impObject[[2]]
++   table1.4_srandom <- softRandomFilling(table1.3)
++   table1.4_frandom <- fullRandomFilling(table1.3)
++   
++   message(paste("End of preprocessing and imputation"))
++   message(paste("##### Starting prediction of ", sub(".csv",sub("data/","",pathTableName)), " table #####"))
++   
++   message("##### MICE imputation #####")
++   
++   
++   outcome_mice <- predictionTest(table1.4_mice, "Sex", predictorReg)
++   
++   message("##### Full Random imputation #####")
++   
++   
++   outcome_frand <- predictionTest(table1.4_frandom, "Sex", predictorReg)
++   
++   message("##### Soft Random imputation #####")
++   
++   
++   outcome_srand <- predictionTest(table1.4_srandom, "Sex", predictorReg)
++   
++   message("##### NoNA procedure #####")
++   
++   
++   outcome_nona <- predictionTest(table1.3_nona, "Sex", predictorReg)
++   
++   message("##### Saving results #####")
++   
++   
++   outcomePred <- list(outcome_mice,
++                       outcome_frand,
++                       outcome_srand,
++                       outcome_nona)
++   
++   metricsPred <- metricsOutcome(outcome_mice, outcome_f = outcome_frand, outcome_s = outcome_srand)
++   
++   saveRDS(impObject, file = paste0("temp/impObject_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
++   saveRDS(outcomePred, file = paste0("temp/outocomePRed_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
++   saveRDS(metricsPred, file = paste0("temp/metricsPRed_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
++   
++ }
+> 
+> 
+> 
+> # running -----
+> 
+> mainPredict("data/chronicPlasmAnt.csv", "data/chronicPlasmAnt.csv", "DHPAA")
+Error in is.factor(x) : argument "x" is missing, with no default
+Calls: mainPredict -> message -> paste -> sub -> is.factor
+Execution halted
