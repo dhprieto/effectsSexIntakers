@@ -50,6 +50,53 @@
 # table1.4_srandom <- softRandomFilling(table1.3)
 # table1.4_frandom <- fullRandomFilling(table1.3)
 
+
+softRandomFilling <- function(tabla){
+  
+  for (var in names(tabla)){
+    cat(var,"\n") # Print the variable name for debug purposes
+    flush.console()
+    
+    if (class(tabla[[var]]) == "numeric"){
+      print(length(tabla[is.na(tabla[[var]]), var]))
+      # random number into the var variance
+      
+      for (i in rev(seq(1, length(tabla[is.na(tabla[[var]]), var])))){
+        
+        tabla[is.na(tabla[[var]]), var][i] <- runif(1,
+                                                    min= -1, 
+                                                    max= 2)
+      }
+    }
+  } 
+  return(tabla)
+}
+
+fullRandomFilling <- function(tabla){
+  set.seed(321)  
+  for (var in names(tabla)){
+    cat(var,"\n") # Print the variable name for debug purposes
+    flush.console()
+    
+    if (class(tabla[[var]]) == "numeric"){
+      print(length(tabla[is.na(tabla[[var]]), var]))
+      # random number into the var variance
+      
+      for (i in rev(seq(1, length(tabla[is.na(tabla[[var]]), var])))){
+        
+        tabla[is.na(tabla[[var]]), var][i] <- runif(1, min= -2,max= 3)
+        
+        
+      }
+      
+    }
+    
+    
+  } 
+  
+  return(tabla)
+}
+
 # function test ----
 
 predictionTest <- function(tabla, predictorClass, predictorReg){
@@ -177,16 +224,30 @@ metricsOutcome <- function(outcome_mice, outcome_f, outcome_s, outcome_n = NULL)
   
   # table of classification results
   
-  df.results.class <- data.frame(mice_KNN = outcome_mice[[1]]$resample, mice_RF = outcome_mice[[2]]$resample, 
-                                 mice_XGB = outcome_mice[[3]]$resample, mice_NN = outcome_mice[[4]]$resample,
-                                 frand_KNN = outcome_f[[1]]$resample, frand_RF = outcome_f[[2]]$resample, 
-                                 frand_XBG = outcome_f[[3]]$resample, frand_NN = outcome_f[[4]]$resample,
-                                 srand_KNN = outcome_s[[1]]$resample, srand_RF = outcome_s[[2]]$resample, 
-                                 srand_XGB = outcome_s[[3]]$resample, srand_NN = outcome_s[[4]]$resample)
-  
-  
-  
-  # plots to compare classification models
+  df.results.class <- data.frame(KNN = rbind(MICE = outcome_mice[[1]]$results[rownames(outcome_mice[[1]]$bestTune),
+                                c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                               Soft = outcome_f[[1]]$results[rownames(outcome_f[[1]]$bestTune), 
+                                c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                               Full = outcome_s[[1]]$results[rownames(outcome_s[[1]]$bestTune),
+                                c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")]),
+                    RF = rbind(MICE = outcome_mice[[2]]$results[rownames(outcome_mice[[2]]$bestTune), 
+                                c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                             Soft = outcome_f[[2]]$results[rownames(outcome_f[[2]]$bestTune),
+                                c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                             Full =  outcome_s[[2]]$results[rownames(outcome_s[[2]]$bestTune),
+                                  c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")]),
+                    XGBoost = rbind(MICE = outcome_mice[[3]]$results[rownames(outcome_mice[[3]]$bestTune),
+                                    c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                                  Soft = outcome_f[[3]]$results[rownames(outcome_f[[3]]$bestTune),
+                                    c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                                  Full =  outcome_s[[3]]$results[rownames(outcome_s[[3]]$bestTune),
+                                    c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")]),
+                    NNet = rbind(MICE = outcome_mice[[4]]$results[rownames(outcome_mice[[4]]$bestTune),
+                                    c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                               Soft = outcome_f[[4]]$results[rownames(outcome_f[[4]]$bestTune),
+                                    c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")],
+                               Full = outcome_s[[4]]$results[rownames(outcome_s[[4]]$bestTune),
+                                    c("ROC", "Sens", "Spec", "ROCSD", "SensSD", "SpecSD")]))
   
   results.class <- resamples(list(mice_KNN = outcome_mice[[1]], mice_RF = outcome_mice[[2]], 
                                   mice_XGB = outcome_mice[[3]], mice_NN = outcome_mice[[4]],
@@ -196,15 +257,42 @@ metricsOutcome <- function(outcome_mice, outcome_f, outcome_s, outcome_n = NULL)
                                   srand_XGB = outcome_s[[3]], srand_NN = outcome_s[[4]]))
   
   summary.class <- summary(results.class)
+  
+  # plots to compare classification models
   scales <- list(x=list(relation="free"), y=list(relation="free"))
-  bxp.class <- bwplot(results.class, scales=scales,
-                      main = "Classification performance metrics for different combinations of imputations and models")
-  densp.class <- densityplot(results.class, scales=scales, pch = "|")
-  dotplot.class <- dotplot(results.class, scales=scales)
+  bxp.class <- bwplot(results.class, scales=scales, #metric = c("ROC","Sens", "Spec"),
+                    main = "Clasification performance metrics for different combinations of imputations and models")
   
   
+  # return(list(knnFit.class, rfFit.class, xgbFit.class,nnFit.class,
+  #             knnFit.reg, rfFit.reg, xgbFit.reg, nnFit.reg))
     
   # table of regression results
+  
+  df.results.reg <- data.frame(KNN = rbind(MICE = outcome_mice[[5]]$results[rownames(outcome_mice[[5]]$bestTune),
+                                                            c("Rsquared", "RMSE", "MAE")],
+                           Soft = outcome_f[[5]]$results[rownames(outcome_f[[5]]$bestTune), 
+                                                         c("Rsquared", "RMSE", "MAE")],
+                           Full = outcome_s[[5]]$results[rownames(outcome_s[[5]]$bestTune),
+                                                         c("Rsquared", "RMSE", "MAE")]),
+               RF = rbind(MICE = outcome_mice[[6]]$results[rownames(outcome_mice[[6]]$bestTune), 
+                                                           c("Rsquared", "RMSE", "MAE")],
+                          Soft = outcome_f[[6]]$results[rownames(outcome_f[[6]]$bestTune),
+                                                        c("Rsquared", "RMSE", "MAE")],
+                          Full =  outcome_s[[6]]$results[rownames(outcome_s[[6]]$bestTune),
+                                                         c("Rsquared", "RMSE", "MAE")]),
+               XGBoost = rbind(MICE = outcome_mice[[7]]$results[rownames(outcome_mice[[7]]$bestTune),
+                                                                c("Rsquared", "RMSE", "MAE")],
+                               Soft = outcome_f[[7]]$results[rownames(outcome_f[[7]]$bestTune),
+                                                             c("Rsquared", "RMSE", "MAE")],
+                               Full =  outcome_s[[7]]$results[rownames(outcome_s[[7]]$bestTune),
+                                                              c("Rsquared", "RMSE", "MAE")]),
+               NNet = rbind(MICE = outcome_mice[[8]]$results[rownames(outcome_mice[[8]]$bestTune),
+                                                             c("Rsquared", "RMSE", "MAE")],
+                            Soft = outcome_f[[8]]$results[rownames(outcome_f[[8]]$bestTune),
+                                                          c("Rsquared", "RMSE", "MAE")],
+                            Full = outcome_s[[8]]$results[rownames(outcome_s[[8]]$bestTune),
+                                                          c("Rsquared", "RMSE", "MAE")]))
   
   
   results.reg <- resamples(list(mice_KNN = outcome_mice[[5]], mice_RF = outcome_mice[[6]], 
@@ -218,23 +306,36 @@ metricsOutcome <- function(outcome_mice, outcome_f, outcome_s, outcome_n = NULL)
   
   
   # plots to compare regression models
-  
-  bxp.class <- bwplot(results.reg, scales=scales, 
+  scales <- list(x=list(relation="free"), y=list(relation="free"))
+  bxp.reg <- bwplot(results.reg, scales=scales, metric = c("Rsquared","MAE", "RMSE"),
                       main = "Regression performance metrics for different combinations of imputations and models")
   
   
 
     
-  return(list(df.results.class, results.class,summary.class, bxp.class, densp.class, dotplot.class, 
-              results.reg, summary.reg))
+  return(list(results_class = df.results.class, resamples.class = results.class, 
+              summary.resamples.class = summary.class, boxplot.class = bxp.class, 
+              results_reg = df.results.reg, resamples.reg = results.reg, summary.resamples.reg =summary.reg,
+              boxplot.reg = bxp.reg))
         
 }
 
-metrics_1 <- metricsOutcome(outcome_1, outcome_f = outcome_2, outcome_s = outcome_3)
 
-scales <- list(x=list(relation="free"), y=list(relation="free"))
-bxp.class <- bwplot(metrics_1[[7]], scales=scales, metric = c("Rsquared","MAE", "RMSE"),
-                    main = "Performance metrics for different combinations of imputations and models")
+
+writeResults <- function(tableMetrics){
+  
+  data.table::fwrite(x = tableMetrics$results_reg, file = paste0("temp/regResults_", deparse(substitute(tableMetrics)), ".csv"),
+                     row.names = T)
+  data.table::fwrite(x =tableMetrics$results_class, file = paste0("temp/classResults_", deparse(substitute(tableMetrics)), ".csv"),
+                     row.names = T)
+  
+}
+
+# metrics_1 <- metricsOutcome(outcome_1, outcome_f = outcome_2, outcome_s = outcome_3)
+# 
+# scales <- list(x=list(relation="free"), y=list(relation="free"))
+# bxp.class <- bwplot(metrics_1[[7]], scales=scales, ,
+#                     main = "Performance metrics for different combinations of imputations and models")
 
 
 

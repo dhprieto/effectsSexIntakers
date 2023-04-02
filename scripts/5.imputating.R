@@ -7,7 +7,7 @@ factoringImputating <- function(tableNorm){
   tableNorm$Sex <- factor(tableNorm$Sex)
   tableNorm$Time <- factor(tableNorm$Time)
   
-  imp <- mice(tableNorm, method = "rf", m = 10)
+  imp <- mice(tableNorm, method = "rf", m = 10, printFlag = F, remove_collinear = F)
   
   tableImp <- complete(imp)
   

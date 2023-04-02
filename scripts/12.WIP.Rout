@@ -42,7 +42,7 @@ Type 'q()' to quit R.
 -- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
 v dplyr     1.1.0     v readr     2.1.4
 v forcats   1.0.0     v stringr   1.5.0
-v ggplot2   3.4.1     v tibble    3.1.8
+v ggplot2   3.4.1     v tibble    3.2.1
 v lubridate 1.9.2     v tidyr     1.3.0
 v purrr     1.0.1     
 -- Conflicts ------------------------------------------ tidyverse_conflicts() --
@@ -50,15 +50,16 @@ x dplyr::filter() masks stats::filter()
 x dplyr::lag()    masks stats::lag()
 i Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 Warning messages:
-1: package 'ggplot2' was built under R version 4.1.3 
-2: package 'tibble' was built under R version 4.1.3 
-3: package 'tidyr' was built under R version 4.1.3 
-4: package 'readr' was built under R version 4.1.3 
-5: package 'purrr' was built under R version 4.1.3 
-6: package 'dplyr' was built under R version 4.1.3 
-7: package 'stringr' was built under R version 4.1.3 
-8: package 'forcats' was built under R version 4.1.3 
-9: package 'lubridate' was built under R version 4.1.3 
+1: package 'tidyverse' was built under R version 4.1.3 
+2: package 'ggplot2' was built under R version 4.1.3 
+3: package 'tibble' was built under R version 4.1.3 
+4: package 'tidyr' was built under R version 4.1.3 
+5: package 'readr' was built under R version 4.1.3 
+6: package 'purrr' was built under R version 4.1.3 
+7: package 'dplyr' was built under R version 4.1.3 
+8: package 'stringr' was built under R version 4.1.3 
+9: package 'forcats' was built under R version 4.1.3 
+10: package 'lubridate' was built under R version 4.1.3 
 > source("scripts/2.normalizingFactoring.R") #normalizingNumeric & factoringImputating
 
 Attaching package: 'scales'
@@ -113,8 +114,10 @@ The following object is masked from 'package:purrr':
 
     lift
 
-Warning message:
-package 'caret' was built under R version 4.1.3 
+Warning messages:
+1: package 'caret' was built under R version 4.1.3 
+2: package 'lattice' was built under R version 4.1.3 
+3: package 'AppliedPredictiveModeling' was built under R version 4.1.3 
 > source("scripts/5.imputating.R")
 > source("scripts/10.testingImputation.R")
 > 
@@ -122,7 +125,8 @@ package 'caret' was built under R version 4.1.3
 > 
 > mainPredict <- function(pathToTable, pathTableName, predictorReg){
 +   
-+   message(paste("##### Starting analysis of ", sub(".csv",sub("data/","",pathTableName)), " table #####"))
++   message(paste("##### ------------------------ Starting analysis of", sub(".csv","",sub("data/","",pathTableName)), 
++                 "table ------------------------ #####"))
 +   
 +   
 +   set.seed(123)
@@ -148,29 +152,28 @@ package 'caret' was built under R version 4.1.3
 +   table1.4_frandom <- fullRandomFilling(table1.3)
 +   
 +   message(paste("End of preprocessing and imputation"))
-+   message(paste("##### Starting prediction of ", sub(".csv",sub("data/","",pathTableName)), " table #####"))
++   message(paste("##### ------------------------ Starting prediction of", sub(".csv","",sub("data/","",pathTableName)), 
++                 "table ------------------------ #####"))
 +   
-+   message("##### MICE imputation #####")
-+   
-+   
++   message("##### ------------ MICE imputation ------------ #####")
++ 
 +   outcome_mice <- predictionTest(table1.4_mice, "Sex", predictorReg)
 +   
-+   message("##### Full Random imputation #####")
-+   
++   message("#####  ------------ Full Random imputation ------------ #####")
 +   
 +   outcome_frand <- predictionTest(table1.4_frandom, "Sex", predictorReg)
 +   
-+   message("##### Soft Random imputation #####")
++   message("##### ------------ Soft Random imputation ------------ #####")
 +   
 +   
 +   outcome_srand <- predictionTest(table1.4_srandom, "Sex", predictorReg)
 +   
-+   message("##### NoNA procedure #####")
++   message("##### ------------ NoNA procedure ------------ #####")
 +   
 +   
 +   outcome_nona <- predictionTest(table1.3_nona, "Sex", predictorReg)
 +   
-+   message("##### Saving results #####")
++   message("#####  ------------ Saving results ------------  #####")
 +   
 +   
 +   outcomePred <- list(outcome_mice,
@@ -180,17 +183,473 @@ package 'caret' was built under R version 4.1.3
 +   
 +   metricsPred <- metricsOutcome(outcome_mice, outcome_f = outcome_frand, outcome_s = outcome_srand)
 +   
-+   saveRDS(impObject, file = paste0("temp/impObject_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
-+   saveRDS(outcomePred, file = paste0("temp/outocomePRed_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
-+   saveRDS(metricsPred, file = paste0("temp/metricsPRed_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
++   saveRDS(impObject, file = paste0("temp/impObject_", sub(".csv","", sub("data/","",pathTableName)),".RDS"))
++   saveRDS(outcomePred, file = paste0("temp/outcomePRed_", sub(".csv","", sub("data/","",pathTableName)),".RDS"))
++   saveRDS(metricsPred, file = paste0("temp/metricsPRed_", sub(".csv","", sub("data/","",pathTableName)),".RDS"))
 +   
 + }
 > 
 > 
-> 
 > # running -----
 > 
+> 
+> mainPredict("data/chronicUrineAnt.csv", "data/chronicUrineAnt.csv", "CA.G")
+##### ------------------------ Starting analysis of chronicUrineAnt table ------------------------ #####
+CA 
+[1] 23
+CA.G 
+[1] 3
+CA.S 
+[1] 144
+CA.GS 
+Total.CA 
+DHPAA 
+[1] 19
+DHPAA.G 
+[1] 7
+DHPAA.GG 
+[1] 130
+DHPAA.GS 
+[1] 23
+DHPAA.SS 
+[1] 23
+Total.DHPAA 
+[1] 6
+TFA.G 
+[1] 6
+TFA.S 
+[1] 4
+TFA.di.sulfate.1 
+[1] 130
+Total.TFA 
+[1] 0
+TIFA.Sulfate.1 
+[1] 123
+VA 
+[1] 6
+VA.GG 
+[1] 28
+VA.GS 
+[1] 20
+VA.SS 
+[1] 25
+Total.VA 
+[1] 0
+Sweetener 
+Time 
+Sex 
+CA 
+[1] 23
+CA.G 
+[1] 3
+CA.S 
+[1] 144
+CA.GS 
+Total.CA 
+DHPAA 
+[1] 19
+DHPAA.G 
+[1] 7
+DHPAA.GG 
+[1] 130
+DHPAA.GS 
+[1] 23
+DHPAA.SS 
+[1] 23
+Total.DHPAA 
+[1] 6
+TFA.G 
+[1] 6
+TFA.S 
+[1] 4
+TFA.di.sulfate.1 
+[1] 130
+Total.TFA 
+[1] 0
+TIFA.Sulfate.1 
+[1] 123
+VA 
+[1] 6
+VA.GG 
+[1] 28
+VA.GS 
+[1] 20
+VA.SS 
+[1] 25
+Total.VA 
+[1] 0
+Sweetener 
+Time 
+Sex 
+End of preprocessing and imputation
+##### ------------------------ Starting prediction of chronicUrineAnt table ------------------------ #####
+##### ------------ MICE imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Full Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ Soft Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ NoNA procedure ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Saving results ------------  #####
+There were 50 or more warnings (use warnings() to see the first 50)
+> mainPredict("data/chronicUrineFlav.csv", "data/chronicUrineFlav.csv", "HE")
+##### ------------------------ Starting analysis of chronicUrineFlav table ------------------------ #####
+E 
+[1] 19
+EG.1 
+[1] 2
+E.S 
+[1] 10
+Total.E 
+[1] 0
+HE 
+[1] 0
+HE.G 
+[1] 7
+HE.GG 
+[1] 0
+Total.HE 
+[1] 0
+N 
+[1] 19
+N.G 
+[1] 1
+N.GG 
+[1] 20
+N.S 
+[1] 4
+Total.N 
+[1] 0
+Sweetener 
+Time 
+Sex 
+E 
+[1] 19
+EG.1 
+[1] 2
+E.S 
+[1] 10
+Total.E 
+[1] 0
+HE 
+[1] 0
+HE.G 
+[1] 7
+HE.GG 
+[1] 0
+Total.HE 
+[1] 0
+N 
+[1] 19
+N.G 
+[1] 1
+N.GG 
+[1] 20
+N.S 
+[1] 4
+Total.N 
+[1] 0
+Sweetener 
+Time 
+Sex 
+End of preprocessing and imputation
+##### ------------------------ Starting prediction of chronicUrineFlav table ------------------------ #####
+##### ------------ MICE imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Full Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ Soft Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ NoNA procedure ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 15 unique complexity parameters in default grid. Truncating the grid to 15 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Saving results ------------  #####
+There were 17 warnings (use warnings() to see them)
 > mainPredict("data/chronicPlasmAnt.csv", "data/chronicPlasmAnt.csv", "DHPAA")
-Error in is.factor(x) : argument "x" is missing, with no default
-Calls: mainPredict -> message -> paste -> sub -> is.factor
+##### ------------------------ Starting analysis of chronicPlasmAnt table ------------------------ #####
+CA 
+[1] 12
+CA.G 
+[1] 1
+CA.S 
+[1] 23
+Total.CA 
+[1] 0
+DHPAA 
+[1] 0
+DHPAA.G 
+[1] 4
+DHPAA.GG 
+[1] 19
+DHPAA.GS 
+[1] 19
+DHPAA.SS 
+[1] 45
+Total.DHPAA 
+[1] 0
+TFA.G 
+[1] 59
+TFA.S 
+[1] 13
+Total.TFA 
+[1] 0
+VA 
+[1] 132
+VA.GG 
+[1] 0
+VA.S 
+[1] 64
+VA.GS 
+[1] 2
+VA.SS 
+[1] 19
+Total.VA 
+[1] 0
+Sweetener 
+Time 
+Sex 
+CA 
+[1] 12
+CA.G 
+[1] 1
+CA.S 
+[1] 23
+Total.CA 
+[1] 0
+DHPAA 
+[1] 0
+DHPAA.G 
+[1] 4
+DHPAA.GG 
+[1] 19
+DHPAA.GS 
+[1] 19
+DHPAA.SS 
+[1] 45
+Total.DHPAA 
+[1] 0
+TFA.G 
+[1] 59
+TFA.S 
+[1] 13
+Total.TFA 
+[1] 0
+VA 
+[1] 132
+VA.GG 
+[1] 0
+VA.S 
+[1] 64
+VA.GS 
+[1] 2
+VA.SS 
+[1] 19
+Total.VA 
+[1] 0
+Sweetener 
+Time 
+Sex 
+End of preprocessing and imputation
+##### ------------------------ Starting prediction of chronicPlasmAnt table ------------------------ #####
+##### ------------ MICE imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Full Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ Soft Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ NoNA procedure ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Saving results ------------  #####
+There were 50 or more warnings (use warnings() to see the first 50)
+> mainPredict("data/chronicPlasmFlav.csv", "data/chronicPlasmFlav.csv", "HE.G")
+##### ------------------------ Starting analysis of chronicPlasmFlav table ------------------------ #####
+E 
+[1] 5
+E.S 
+[1] 83
+Total.E 
+[1] 202
+HE.G 
+[1] 0
+N.G 
+[1] 0
+Sweetener 
+Time 
+Sex 
+E 
+[1] 5
+E.S 
+[1] 83
+Total.E 
+[1] 202
+HE.G 
+[1] 0
+N.G 
+[1] 0
+Sweetener 
+Time 
+Sex 
+End of preprocessing and imputation
+##### ------------------------ Starting prediction of chronicPlasmFlav table ------------------------ #####
+##### ------------ MICE imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Full Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ Soft Random imputation ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+##### ------------ NoNA procedure ------------ #####
+##### KNN Classification #####
+##### RF Classification #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Classification #####
+##### NNets Classification #####
+##### KNN Regression #####
+##### RF Regression #####
+note: only 7 unique complexity parameters in default grid. Truncating the grid to 7 .
+
+##### XGBoost Regression #####
+##### NNets Regression #####
+#####  ------------ Saving results ------------  #####
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> 
+> 
+> writeResults(readRDS("temp/metricsPRed_chronicPlasmFlav.RDS"))
+Error in data.table::fwrite(x = tableMetrics$results_reg, file = paste0("temp/regResults_",  : 
+  Invalid argument: 'temp/regResults_readRDS("temp/metricsPRed_chronicPlasmFlav.RDS").csv'. Unable to create new file for writing (it does not exist already). Do you have permission to write here, is there space on the disk and does the path exist?
+Calls: writeResults -> <Anonymous>
 Execution halted

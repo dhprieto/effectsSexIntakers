@@ -28,7 +28,8 @@ source("scripts/10.testingImputation.R")
 
 mainPredict <- function(pathToTable, pathTableName, predictorReg){
   
-  message(paste("##### Starting analysis of ", sub(".csv",sub("data/","",pathTableName)), " table #####"))
+  message(paste("##### ------------------------ Starting analysis of", sub(".csv","",sub("data/","",pathTableName)), 
+                "table ------------------------ #####"))
   
   
   set.seed(123)
@@ -54,29 +55,28 @@ mainPredict <- function(pathToTable, pathTableName, predictorReg){
   table1.4_frandom <- fullRandomFilling(table1.3)
   
   message(paste("End of preprocessing and imputation"))
-  message(paste("##### Starting prediction of ", sub(".csv",sub("data/","",pathTableName)), " table #####"))
+  message(paste("##### ------------------------ Starting prediction of", sub(".csv","",sub("data/","",pathTableName)), 
+                "table ------------------------ #####"))
   
-  message("##### MICE imputation #####")
-  
-  
+  message("##### ------------ MICE imputation ------------ #####")
+
   outcome_mice <- predictionTest(table1.4_mice, "Sex", predictorReg)
   
-  message("##### Full Random imputation #####")
-  
+  message("#####  ------------ Full Random imputation ------------ #####")
   
   outcome_frand <- predictionTest(table1.4_frandom, "Sex", predictorReg)
   
-  message("##### Soft Random imputation #####")
+  message("##### ------------ Soft Random imputation ------------ #####")
   
   
   outcome_srand <- predictionTest(table1.4_srandom, "Sex", predictorReg)
   
-  message("##### NoNA procedure #####")
+  message("##### ------------ NoNA procedure ------------ #####")
   
   
   outcome_nona <- predictionTest(table1.3_nona, "Sex", predictorReg)
   
-  message("##### Saving results #####")
+  message("#####  ------------ Saving results ------------  #####")
   
   
   outcomePred <- list(outcome_mice,
@@ -86,20 +86,28 @@ mainPredict <- function(pathToTable, pathTableName, predictorReg){
   
   metricsPred <- metricsOutcome(outcome_mice, outcome_f = outcome_frand, outcome_s = outcome_srand)
   
-  saveRDS(impObject, file = paste0("temp/impObject_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
-  saveRDS(outcomePred, file = paste0("temp/outocomePRed_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
-  saveRDS(metricsPred, file = paste0("temp/metricsPRed_", sub(".csv","", sub("temp/","",pathTableName)),".RDS"))
+  saveRDS(impObject, file = paste0("temp/impObject_", sub(".csv","", sub("data/","",pathTableName)),".RDS"))
+  saveRDS(outcomePred, file = paste0("temp/outcomePRed_", sub(".csv","", sub("data/","",pathTableName)),".RDS"))
+  saveRDS(metricsPred, file = paste0("temp/metricsPRed_", sub(".csv","", sub("data/","",pathTableName)),".RDS"))
   
 }
 
 
-
 # running -----
 
+
+mainPredict("data/chronicUrineAnt.csv", "data/chronicUrineAnt.csv", "CA.G")
+mainPredict("data/chronicUrineFlav.csv", "data/chronicUrineFlav.csv", "HE")
 mainPredict("data/chronicPlasmAnt.csv", "data/chronicPlasmAnt.csv", "DHPAA")
 mainPredict("data/chronicPlasmFlav.csv", "data/chronicPlasmFlav.csv", "HE.G")
-mainPredict("data/chronicUrineFlav.csv", "data/chronicUrineFlav.csv", "HE")
-mainPredict("data/chronicUrineAnt.csv", "data/chronicUrineAnt.csv", "CA.G")
+
+
+
+writeResults(readRDS("temp/metricsPRed_chronicPlasmFlav.RDS"))
+writeResults(readRDS("temp/metricsPRed_chronicPlasmAnt.RDS"))
+writeResults(readRDS("temp/metricsPRed_chronicUrineFlav.RDS"))
+writeResults(readRDS("temp/metricsPRed_chronicUrineAnt.RDS"))
+
 
 
 
